@@ -1,121 +1,11 @@
-#include <algorithm>
-
 #include "RaidTempestKeepHelpers.h"
 #include "RaidTempestKeepActions.h"
 #include "LootObjectStack.h"
 #include "Playerbots.h"
-#include "RtiTargetValue.h"
 
 namespace TempestKeepHelpers
 {
-    // General Helpers
-
-    void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
-    {
-        if (!target)
-            return;
-
-        if (Group* group = bot->GetGroup())
-        {
-            ObjectGuid currentGuid = group->GetTargetIcon(iconId);
-            if (currentGuid != target->GetGUID())
-                group->SetTargetIcon(iconId, bot->GetGUID(), target->GetGUID());
-        }
-    }
-
-    void MarkTargetWithSkull(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::skullIndex);
-    }
-
-    void MarkTargetWithSquare(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::squareIndex);
-    }
-
-    void MarkTargetWithStar(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::starIndex);
-    }
-
-    void MarkTargetWithCircle(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::circleIndex);
-    }
-
-    void MarkTargetWithTriangle(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::triangleIndex);
-    }
-
-    void MarkTargetWithDiamond(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::diamondIndex);
-    }
-
-    void MarkTargetWithCross(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::crossIndex);
-    }
-
-    void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target)
-    {
-        std::string currentRti = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
-        Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
-
-        if (currentRti != rtiName || currentTarget != target)
-        {
-            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(rtiName);
-            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(target);
-        }
-    }
-
-    bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot)
-    {
-        if (Group* group = bot->GetGroup())
-        {
-            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-                if (!member || !member->IsAlive() || !botAI->IsDps(member) ||
-                    !GET_PLAYERBOT_AI(member))
-                    continue;
-
-                Player* capernianTank = GetCapernianTank(botAI, member);
-                if (capernianTank && capernianTank == member)
-                    continue;
-
-                return member == bot;
-            }
-        }
-
-        return false;
-    }
-
-    Unit* GetNearestPlayerInRadius(Player* bot, float radius)
-    {
-        Unit* nearestPlayer = nullptr;
-        float nearestDistance = radius;
-
-        if (Group* group = bot->GetGroup())
-        {
-            for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-                if (!member || !member->IsAlive() || member == bot)
-                    continue;
-
-                float distance = bot->GetExactDist2d(member);
-                if (distance < nearestDistance)
-                {
-                    nearestDistance = distance;
-                    nearestPlayer = member;
-                }
-            }
-        }
-
-        return nearestPlayer;
-    }
+    // General
 
     Unit* GetNearestNonTankPlayerInRadius(Player* bot, float radius)
     {
@@ -166,10 +56,10 @@ namespace TempestKeepHelpers
     Position FindSafestNearbyPosition(Player* bot, const std::vector<Unit*>& hazards,
         float maxRadius, float hazardRadius, const Position* center)
     {
-        const float searchStep = M_PI / 8.0f;
-        const float minDistance = 2.0f;
-        const float maxDistance = 30.0f;
-        const float distanceStep = 1.0f;
+        constexpr float searchStep = M_PI / 8.0f;
+        constexpr float minDistance = 2.0f;
+        constexpr float maxDistance = 30.0f;
+        constexpr float distanceStep = 1.0f;
 
         Position bestPos;
         float minMoveDistance = std::numeric_limits<float>::max();
@@ -227,7 +117,7 @@ namespace TempestKeepHelpers
     bool IsPathSafeFromHazards(
         const Position& start, const Position& end, const std::vector<Unit*>& hazards, float hazardRadius)
     {
-        const uint8 numChecks = 10;
+        constexpr uint8 numChecks = 10;
         float dx = end.GetPositionX() - start.GetPositionX();
         float dy = end.GetPositionY() - start.GetPositionY();
 
@@ -446,9 +336,6 @@ namespace TempestKeepHelpers
     const Position TELONICUS_WAITING_POSITION = { 754.347f, 31.739f, 46.796f };
     const Position ADVISOR_HEAL_POSITION = { 757.425f, 13.011f, 46.779f };
     const Position CAPERNIAN_WAITING_POSITION = { 743.897f, -11.575f, 46.779f };
-    const Position KAELTHAS_WEAPON_STACK_POSITION = { 775.296f, -0.822f, 48.729f };
-    const Position KAELTHAS_AXE_TANK_POSITION = { 775.621f, 20.717f, 48.729f };
-    const Position KAELTHAS_BOW_TANK_POSITION = { 777.713f, -28.857f, 48.729f };
     const Position KAELTHAS_TANK_POSITION = { 799.390f, -0.837f, 48.729f };
 
     std::unordered_map<uint32, time_t> advisorDpsWaitTimer;
@@ -470,10 +357,7 @@ namespace TempestKeepHelpers
                 return member;
         }
 
-        // (2) Fall back to bot Warlock with highest HP
-        Player* highestHpWarlock = nullptr;
-        uint32 highestHp = 0;
-
+        // (2) Fall back to first found bot Warlock
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
@@ -481,19 +365,15 @@ namespace TempestKeepHelpers
                 member->getClass() != CLASS_WARLOCK)
                 continue;
 
-            uint32 hp = member->GetMaxHealth();
-            if (!highestHpWarlock || hp > highestHp)
-            {
-                highestHpWarlock = member;
-                highestHp = hp;
-            }
+            return member;
         }
 
-        // (3) Return the found Warlock tank, or nullptr if none found
-        return highestHpWarlock;
+        // (3) Return nullptr if none found
+        return nullptr;
     }
 
-    Player* GetNetherstrandLongbowTank(PlayerbotAI* botAI, Player* bot)
+    // One Hunter will start on Sanguinar in Phase 3 with Melee to apply Armor Disruption
+    Player* GetDebuffHunter(PlayerbotAI* botAI, Player* bot)
     {
         Group* group = bot->GetGroup();
         if (!group)
@@ -510,7 +390,7 @@ namespace TempestKeepHelpers
                 return member;
         }
 
-        // (2) Fall back to any bot Hunter
+        // (2) Fall back to first found bot Hunter
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();

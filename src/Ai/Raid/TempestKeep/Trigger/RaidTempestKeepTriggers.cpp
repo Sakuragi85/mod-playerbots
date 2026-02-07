@@ -3,6 +3,7 @@
 #include "RaidTempestKeepActions.h"
 #include "RaidTempestKeepKaelthasBossAI.h"
 #include "Playerbots.h"
+#include "RaidBossHelpers.h"
 
 using namespace TempestKeepHelpers;
 
@@ -55,13 +56,13 @@ bool AlarBossIsFlyingBetweenPlatformsTrigger::IsActive()
 bool AlarEmbersOfAlarExplodeUponDeathTrigger::IsActive()
 {
     return botAI->IsTank(bot) &&
-           AI_VALUE2(Unit*, "find target", "ember of al'ar");
+           AI_VALUE2(Unit*, "find target", "ember of alar");
 }
 
 bool AlarKillingEmbersOfAlarDamagesBossTrigger::IsActive()
 {
     return botAI->IsRangedDps(bot) &&
-           AI_VALUE2(Unit*, "find target", "ember of al'ar");
+           AI_VALUE2(Unit*, "find target", "ember of alar");
 }
 
 bool AlarIncomingFlameQuillsTrigger::IsActive()
@@ -114,8 +115,8 @@ bool AlarPhase2EncounterIsAtRoomCenterTrigger::IsActive()
 
 bool AlarStrategyChangesBetweenPhasesTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "al'ar") &&
-           IsInstanceTimerManager(botAI, bot);
+    return IsMechanicTrackerBot(botAI, bot, TEMPEST_KEEP_MAP_ID, nullptr) &&
+           AI_VALUE2(Unit*, "find target", "al'ar");
 }
 
 // Void Reaver
@@ -205,12 +206,12 @@ bool HighAstromancerSolarianBossCastsPsychicScreamTrigger::IsActive()
 
 bool KaelthasSunstriderThaladredIsFixatedOnBotTrigger::IsActive()
 {
-    Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
-    if (!thaladred || thaladred->GetVictim() != bot)
-        return false;
-
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
+        return false;
+
+    Unit* thaladred = AI_VALUE2(Unit*, "find target", "thaladred the darkener");
+    if (!thaladred || thaladred->GetVictim() != bot)
         return false;
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
@@ -236,12 +237,12 @@ bool KaelthasSunstriderPullingTankableAdvisorsTrigger::IsActive()
 
 bool KaelthasSunstriderSanguinarEngagedByMainTankTrigger::IsActive()
 {
-    Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
-    if (!sanguinar || sanguinar->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ||
-        sanguinar->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
+    if (!botAI->IsMainTank(bot))
         return false;
 
-    return botAI->IsMainTank(bot);
+    Unit* sanguinar = AI_VALUE2(Unit*, "find target", "lord sanguinar");
+    return sanguinar && !sanguinar->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
+           !sanguinar->HasAura(SPELL_PERMANENT_FEIGN_DEATH);
 }
 
 bool KaelthasSunstriderSanguinarCastsBellowingRoarTrigger::IsActive()
@@ -285,30 +286,32 @@ bool KaelthasSunstriderCapernianShouldBeTankedByAWarlockTrigger::IsActive()
     if (bot->getClass() != CLASS_WARLOCK)
         return false;
 
-    if (!AI_VALUE2(Unit*, "find target", "kael'thas sunstrider"))
+    if (GetCapernianTank(botAI, bot) != bot)
         return false;
 
-    return GetCapernianTank(botAI, bot) == bot;
+    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+    return capernian && !capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
+           !capernian->HasAura(SPELL_PERMANENT_FEIGN_DEATH);
 }
 
 bool KaelthasSunstriderCapernianCastsArcaneBurstAndConflagrationTrigger::IsActive()
 {
-    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
-    if (!capernian || capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ||
-        capernian->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
+    if (GetCapernianTank(botAI, bot) == bot)
         return false;
 
-    return GetCapernianTank(botAI, bot) != bot;
+    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+    return capernian && !capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
+           !capernian->HasAura(SPELL_PERMANENT_FEIGN_DEATH);
 }
 
 bool KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger::IsActive()
 {
-    Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
-    if (!telonicus || telonicus->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ||
-        telonicus->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
+    if (!botAI->IsAssistTankOfIndex(bot, 0, true))
         return false;
 
-    return botAI->IsAssistTankOfIndex(bot, 0, true);
+    Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
+    return telonicus && !telonicus->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
+           !telonicus->HasAura(SPELL_PERMANENT_FEIGN_DEATH);
 }
 
 bool KaelthasSunstriderBotsHaveSpecificRolesInPhase3Trigger::IsActive()
@@ -355,7 +358,7 @@ bool KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger::IsActive()
     if (!kaelthas)
         return false;
 
-    if (!IsInstanceTimerManager(botAI, bot))
+    if (!IsMechanicTrackerBot(botAI, bot, TEMPEST_KEEP_MAP_ID, GetCapernianTank(botAI, bot)))
         return false;
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
@@ -368,7 +371,7 @@ bool KaelthasSunstriderLegendaryWeaponsAreAliveTrigger::IsActive()
     if (!kaelthas)
         return false;
 
-    if (botAI->IsMainTank(bot) || GetNetherstrandLongbowTank(botAI, bot) == bot)
+    if (botAI->IsMainTank(bot))
         return false;
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
@@ -379,12 +382,6 @@ bool KaelthasSunstriderLegendaryAxeCastsWhirlwindTrigger::IsActive()
 {
     return AI_VALUE2(Unit*, "find target", "devastation") &&
            botAI->IsMainTank(bot);
-}
-
-bool KaelthasSunstriderLegendaryBowCastsMultiShotTrigger::IsActive()
-{
-    return AI_VALUE2(Unit*, "find target", "netherstrand longbow") &&
-           GetNetherstrandLongbowTank(botAI, bot) == bot;
 }
 
 bool KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger::IsActive()
@@ -408,7 +405,7 @@ bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
     if (bot->GetMapId() != TEMPEST_KEEP_MAP_ID)
         return false;
 
-    const uint32 KAELTHAS_DB_GUID = 158218;
+    constexpr uint32 KAELTHAS_DB_GUID = 158218;
     Map* map = bot->GetMap();
     if (!map)
         return false;

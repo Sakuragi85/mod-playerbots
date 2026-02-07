@@ -258,14 +258,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class KaelthasSunstriderManageWarlockTankStrategyAction : public Action
-{
-public:
-    KaelthasSunstriderManageWarlockTankStrategyAction(
-        PlayerbotAI* botAI, std::string const name = "kael'thas sunstrider manage warlock tank strategy") : Action(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
 class KaelthasSunstriderWarlockTankPositionCapernianAction : public AttackAction
 {
 public:
@@ -334,14 +326,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class KaelthasSunstriderHunterTurnAwayNetherstrandLongbowAction : public AttackAction
-{
-public:
-    KaelthasSunstriderHunterTurnAwayNetherstrandLongbowAction(
-        PlayerbotAI* botAI, std::string const name = "kael'thas sunstrider hunter turn away netherstrand longbow") : AttackAction(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
 class KaelthasSunstriderLootLegendaryWeaponsAction : public MovementAction
 {
 public:
@@ -351,7 +335,7 @@ public:
 
 private:
     bool ShouldBotLootWeapon(uint32 weaponEntry);
-    bool LootWeapon(uint32 weaponEntry, uint32 itemId, const char* weaponName);
+    bool LootWeapon(uint32 weaponEntry, uint32 itemId);
 };
 
 class KaelthasSunstriderUseLegendaryWeaponsAction : public Action

@@ -85,7 +85,6 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("kael'thas sunstrider cast fear ward on sanguinar tank", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider capernian should be tanked by a warlock", {
-        NextAction("kael'thas sunstrider manage warlock tank strategy", ACTION_EMERGENCY + 10),
         NextAction("kael'thas sunstrider warlock tank position capernian", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider capernian casts arcane burst and conflagration", {
@@ -108,9 +107,6 @@ void RaidTempestKeepStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider legendary axe casts whirlwind", {
         NextAction("kael'thas sunstrider main tank move devastation away", ACTION_EMERGENCY + 1) }));
-
-    triggers.push_back(new TriggerNode("kael'thas sunstrider legendary bow casts multishot", {
-        NextAction("kael'thas sunstrider hunter turn away netherstrand longbow", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("kael'thas sunstrider legendary weapons are dead and lootable", {
         NextAction("kael'thas sunstrider loot legendary weapons", ACTION_RAID + 1) }));
@@ -158,11 +154,9 @@ void RaidTempestKeepStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new KaelthasSunstriderKiteThaladredMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderWaitForDpsMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderControlMisdirectionMultiplier(botAI));
-    multipliers.push_back(new KaelthasSunstriderDisableShadowWardMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderManageTankTargetingMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderDisableDisperseMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderDelayCooldownsMultiplier(botAI));
-    multipliers.push_back(new KaelthasSunstriderTryNonfatalBreakingOfMindControlMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderAllDpsOnBossDuringPyroblastMultiplier(botAI));
     multipliers.push_back(new KaelthasSunstriderStaySpreadDuringGravityLapseMultiplier(botAI));
 }
