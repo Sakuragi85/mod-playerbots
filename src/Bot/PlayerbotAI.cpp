@@ -185,6 +185,7 @@ PlayerbotAI::PlayerbotAI(Player* bot)
     botOutgoingPacketHandlers.AddHandler(SMSG_TRADE_STATUS_EXTENDED, "trade status extended");
     botOutgoingPacketHandlers.AddHandler(SMSG_LOOT_RESPONSE, "loot response");
     botOutgoingPacketHandlers.AddHandler(SMSG_ITEM_PUSH_RESULT, "item push result");
+    botOutgoingPacketHandlers.AddHandler(SMSG_LOOT_ROLL_WON, "loot roll won");
     botOutgoingPacketHandlers.AddHandler(SMSG_PARTY_COMMAND_RESULT, "party command");
     botOutgoingPacketHandlers.AddHandler(SMSG_LEVELUP_INFO, "levelup");
     botOutgoingPacketHandlers.AddHandler(SMSG_LOG_XPGAIN, "xpgain");
@@ -1554,6 +1555,9 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         case 544:
             strategyName = "magtheridon";  // Magtheridon's Lair
             break;
+        case 548:
+            strategyName = "ssc";  // Serpentshrine Cavern
+            break;
         case 550:
             strategyName = "tempestkeep";  // Tempest Keep
             break;
@@ -1588,7 +1592,7 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             strategyName = "wotlk-hol";  // Halls of Lightning
             break;
         case 603:
-            strategyName = "uld";  // Ulduar
+            strategyName = "ulduar";  // Ulduar
             break;
         case 604:
             strategyName = "wotlk-gd";  // Gundrak
@@ -2583,7 +2587,7 @@ std::string PlayerbotAI::GetLocalizedGameObjectName(uint32 entry)
     return name;
 }
 
-std::vector<Player*> PlayerbotAI::GetPlayersInGroup()
+std::vector<Player*> PlayerbotAI::GetRealPlayersInGroup()
 {
     std::vector<Player*> members;
 
@@ -2603,6 +2607,30 @@ std::vector<Player*> PlayerbotAI::GetPlayersInGroup()
 
         if (GET_PLAYERBOT_AI(member) && !GET_PLAYERBOT_AI(member)->IsRealPlayer())
             continue;
+
+        members.push_back(ref->GetSource());
+    }
+
+    return members;
+}
+
+std::vector<Player*> PlayerbotAI::GetAllPlayersInGroup()
+{
+    std::vector<Player*> members;
+
+    Group* group = bot->GetGroup();
+
+    if (!group)
+        return members;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+
+        if (!member)
+        {
+            continue;
+        }
 
         members.push_back(ref->GetSource());
     }
@@ -2718,9 +2746,9 @@ bool PlayerbotAI::SayToParty(const std::string& msg)
     ChatHandler::BuildChatPacket(data, CHAT_MSG_PARTY, msg.c_str(), LANG_UNIVERSAL, CHAT_TAG_NONE, bot->GetGUID(),
                                  bot->GetName());
 
-    for (auto reciever : GetPlayersInGroup())
+    for (auto receiver : GetRealPlayersInGroup())
     {
-        ServerFacade::instance().SendPacket(reciever, &data);
+        ServerFacade::instance().SendPacket(receiver, &data);
     }
 
     return true;
@@ -2735,9 +2763,9 @@ bool PlayerbotAI::SayToRaid(const std::string& msg)
     ChatHandler::BuildChatPacket(data, CHAT_MSG_RAID, msg.c_str(), LANG_UNIVERSAL, CHAT_TAG_NONE, bot->GetGUID(),
                                  bot->GetName());
 
-    for (auto reciever : GetPlayersInGroup())
+    for (auto receiver : GetRealPlayersInGroup())
     {
-        ServerFacade::instance().SendPacket(reciever, &data);
+        ServerFacade::instance().SendPacket(receiver, &data);
     }
 
     return true;
