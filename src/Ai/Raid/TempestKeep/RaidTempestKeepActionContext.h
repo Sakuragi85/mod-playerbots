@@ -9,10 +9,6 @@ class RaidTempestKeepActionContext : public NamedObjectContext<Action>
 public:
     RaidTempestKeepActionContext()
     {
-        // General
-        creators["tempest keep erase timers and trackers"] =
-            &RaidTempestKeepActionContext::tempest_keep_erase_timers_and_trackers;
-
         // Trash
         creators["crimson hand centurion cast polymorph"] =
             &RaidTempestKeepActionContext::crimson_hand_centurion_cast_polymorph;
@@ -58,8 +54,8 @@ public:
         creators["void reaver tanks position boss"] =
             &RaidTempestKeepActionContext::void_reaver_tanks_position_boss;
 
-        creators["void reaver ranged use aggro dump ability"] =
-            &RaidTempestKeepActionContext::void_reaver_ranged_use_aggro_dump_ability;
+        creators["void reaver use aggro dump ability"] =
+            &RaidTempestKeepActionContext::void_reaver_use_aggro_dump_ability;
 
         creators["void reaver spread ranged"] =
             &RaidTempestKeepActionContext::void_reaver_spread_ranged;
@@ -76,9 +72,6 @@ public:
 
         creators["high astromancer solarian target solarium priests"] =
             &RaidTempestKeepActionContext::high_astromancer_solarian_target_solarium_priests;
-
-        creators["high astromancer solarian tank voidwalker"] =
-            &RaidTempestKeepActionContext::high_astromancer_solarian_tank_voidwalker;
 
         creators["high astromancer solarian cast fear ward on main tank"] =
             &RaidTempestKeepActionContext::high_astromancer_solarian_cast_fear_ward_on_main_tank;
@@ -149,10 +142,6 @@ public:
     }
 
 private:
-    // General
-    static Action* tempest_keep_erase_timers_and_trackers(
-        PlayerbotAI* botAI) { return new TempestKeepEraseTimersAndTrackersAction(botAI); }
-
     // Trash
     static Action* crimson_hand_centurion_cast_polymorph(
         PlayerbotAI* botAI) { return new CrimsonHandCenturionCastPolymorphAction(botAI); }
@@ -198,8 +187,8 @@ private:
     static Action* void_reaver_tanks_position_boss(
         PlayerbotAI* botAI) { return new VoidReaverTanksPositionBossAction(botAI); }
 
-    static Action* void_reaver_ranged_use_aggro_dump_ability(
-        PlayerbotAI* botAI) { return new VoidReaverRangedUseAggroDumpAbilityAction(botAI); }
+    static Action* void_reaver_use_aggro_dump_ability(
+        PlayerbotAI* botAI) { return new VoidReaverUseAggroDumpAbilityAction(botAI); }
 
     static Action* void_reaver_spread_ranged(
         PlayerbotAI* botAI) { return new VoidReaverSpreadRangedAction(botAI); }
@@ -216,9 +205,6 @@ private:
 
     static Action* high_astromancer_solarian_target_solarium_priests(
         PlayerbotAI* botAI) { return new HighAstromancerSolarianTargetSolariumPriestsAction(botAI); }
-
-    static Action* high_astromancer_solarian_tank_voidwalker(
-        PlayerbotAI* botAI) { return new HighAstromancerSolarianTankVoidwalkerAction(botAI); }
 
     static Action* high_astromancer_solarian_cast_fear_ward_on_main_tank(
         PlayerbotAI* botAI) { return new HighAstromancerSolarianCastFearWardOnMainTankAction(botAI); }

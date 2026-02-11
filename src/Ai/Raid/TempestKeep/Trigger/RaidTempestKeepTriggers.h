@@ -5,14 +5,6 @@
 
 // General
 
-class TempestKeepBotIsNotInCombatTrigger : public Trigger
-{
-public:
-    TempestKeepBotIsNotInCombatTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "tempest keep bot is not in combat") {}
-    bool IsActive() override;
-};
-
 // Trash
 
 class CrimsonHandCenturionCastsArcaneVolleyTrigger : public Trigger
@@ -154,14 +146,6 @@ class HighAstromancerSolarianSolariumPriestsSpawnedTrigger : public Trigger
 public:
     HighAstromancerSolarianSolariumPriestsSpawnedTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian solarium priests spawned") {}
-    bool IsActive() override;
-};
-
-class HighAstromancerSolarianBossTransformedIntoVoidwalkerTrigger : public Trigger
-{
-public:
-    HighAstromancerSolarianBossTransformedIntoVoidwalkerTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "high astromancer solarian boss transformed into voidwalker") {}
     bool IsActive() override;
 };
 

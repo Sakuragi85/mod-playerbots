@@ -9,10 +9,6 @@ class RaidTempestKeepTriggerContext : public NamedObjectContext<Trigger>
 public:
     RaidTempestKeepTriggerContext()
     {
-        // General
-        creators["tempest keep bot is not in combat"] =
-            &RaidTempestKeepTriggerContext::tempest_keep_bot_is_not_in_combat;
-
         // Trash
         creators["crimson hand centurion casts arcane volley"] =
             &RaidTempestKeepTriggerContext::crimson_hand_centurion_casts_arcane_volley;
@@ -67,9 +63,6 @@ public:
 
         creators["high astromancer solarian solarium priests spawned"] =
             &RaidTempestKeepTriggerContext::high_astromancer_solarian_solarium_priests_spawned;
-
-        creators["high astromancer solarian boss transformed into voidwalker"] =
-            &RaidTempestKeepTriggerContext::high_astromancer_solarian_boss_transformed_into_voidwalker;
 
         creators["high astromancer solarian boss casts psychic scream"] =
             &RaidTempestKeepTriggerContext::high_astromancer_solarian_boss_casts_psychic_scream;
@@ -137,10 +130,6 @@ public:
     }
 
 private:
-    // General
-    static Trigger* tempest_keep_bot_is_not_in_combat(
-        PlayerbotAI* botAI) { return new TempestKeepBotIsNotInCombatTrigger(botAI); }
-
     // Trash
     static Trigger* crimson_hand_centurion_casts_arcane_volley(
         PlayerbotAI* botAI) { return new CrimsonHandCenturionCastsArcaneVolleyTrigger(botAI); }
@@ -195,9 +184,6 @@ private:
 
     static Trigger* high_astromancer_solarian_solarium_priests_spawned(
         PlayerbotAI* botAI) { return new HighAstromancerSolarianSolariumPriestsSpawnedTrigger(botAI); }
-
-    static Trigger* high_astromancer_solarian_boss_transformed_into_voidwalker(
-        PlayerbotAI* botAI) { return new HighAstromancerSolarianBossTransformedIntoVoidwalkerTrigger(botAI); }
 
     static Trigger* high_astromancer_solarian_boss_casts_psychic_scream(
         PlayerbotAI* botAI) { return new HighAstromancerSolarianBossCastsPsychicScreamTrigger(botAI); }

@@ -2,6 +2,7 @@
 #include "RaidTempestKeepActions.h"
 #include "LootObjectStack.h"
 #include "Playerbots.h"
+#include "RaidBossHelpers.h"
 
 namespace TempestKeepHelpers
 {
@@ -54,7 +55,7 @@ namespace TempestKeepHelpers
     }
 
     Position FindSafestNearbyPosition(Player* bot, const std::vector<Unit*>& hazards,
-        float maxRadius, float hazardRadius, const Position* center)
+        float hazardRadius, const Position* center)
     {
         constexpr float searchStep = M_PI / 8.0f;
         constexpr float minDistance = 2.0f;
@@ -195,7 +196,7 @@ namespace TempestKeepHelpers
 
         float minDist = std::numeric_limits<float>::max();
         int8 locationIndex = LOCATION_NONE;
-        for (int8 i = 0; i < 7; ++i)
+        for (int8 i = 0; i < TOTAL_ALAR_LOCATIONS; ++i)
         {
             float dist = dest.GetExactDist2d(&locations[i]);
             if (dist < minDist)
@@ -227,7 +228,7 @@ namespace TempestKeepHelpers
 
         float minDist = std::numeric_limits<float>::max();
         int8 locationIndex = LOCATION_NONE;
-        for (int8 i = 0; i < 7; ++i)
+        for (int8 i = 0; i < TOTAL_ALAR_LOCATIONS; ++i)
         {
             float dist = alar->GetPosition().GetExactDist2d(&locations[i]);
             if (dist < minDist)
@@ -282,37 +283,18 @@ namespace TempestKeepHelpers
         return { firstEmber, secondEmber };
     }
 
-    Player* GetSecondEmberTank(PlayerbotAI* botAI, Unit* alar)
+    Player* GetSecondEmberTank(PlayerbotAI* botAI)
     {
-        Player* mainTank = nullptr;
-        Player* assistTank = nullptr;
-
-        if (Group* group = botAI->GetBot()->GetGroup())
-        {
-            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-                if (!member)
-                    continue;
-
-                if (botAI->IsMainTank(member))
-                    mainTank = member;
-
-                if (botAI->IsAssistTankOfIndex(member, 0, false))
-                    assistTank = member;
-            }
-        }
+        Player* mainTank = GetGroupMainTank(botAI, botAI->GetBot());
+        Player* assistTank = GetGroupFirstAssistTank(botAI, botAI->GetBot());
 
         bool mainTankHasMelt = mainTank && mainTank->HasAura(SPELL_MELT_ARMOR);
         bool assistTankHasMelt = assistTank && assistTank->HasAura(SPELL_MELT_ARMOR);
 
-        if (!mainTankHasMelt && !assistTankHasMelt)
-            return assistTank;
-
         if (mainTankHasMelt)
             return mainTank;
 
-        if (assistTankHasMelt)
+        if (assistTankHasMelt || (!mainTankHasMelt && !assistTankHasMelt))
             return assistTank;
 
         return nullptr;
@@ -322,19 +304,13 @@ namespace TempestKeepHelpers
 
     const Position VOID_REAVER_TANK_POSITION = { 423.845f, 371.733f, 14.897f };
 
-    std::unordered_map<ObjectGuid, Position> initialVoidReaverPositions;
-    std::unordered_map<ObjectGuid, bool> hasReachedInitialVoidReaverPosition;
-
-    // High Astromancer Solarian
-    // N/A
-
     // Kael'thas Sunstrider <Lord of the Blood Elves>
 
     const Position SANGUINAR_TANK_POSITION = { 775.478f, 39.888f, 46.780f };
     const Position SANGUINAR_WAITING_POSITION = { 761.850f, 27.459f, 46.779f };
     const Position TELONICUS_TANK_POSITION = { 773.717f, 44.091f, 46.780f };
     const Position TELONICUS_WAITING_POSITION = { 754.347f, 31.739f, 46.796f };
-    const Position ADVISOR_HEAL_POSITION = { 757.425f, 13.011f, 46.779f };
+    const Position ADVISOR_HEAL_POSITION = { 744.894f, 23.136f, 46.779f };
     const Position CAPERNIAN_WAITING_POSITION = { 743.897f, -11.575f, 46.779f };
     const Position KAELTHAS_TANK_POSITION = { 799.390f, -0.837f, 48.729f };
 
@@ -350,10 +326,8 @@ namespace TempestKeepHelpers
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || member->getClass() != CLASS_WARLOCK)
-                continue;
-
-            if (group->IsAssistant(member->GetGUID()))
+            if (member && member->IsAlive() && member->getClass() == CLASS_WARLOCK &&
+                group->IsAssistant(member->GetGUID()))
                 return member;
         }
 
@@ -361,11 +335,9 @@ namespace TempestKeepHelpers
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
-                member->getClass() != CLASS_WARLOCK)
-                continue;
-
-            return member;
+            if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) &&
+                member->getClass() == CLASS_WARLOCK)
+                return member;
         }
 
         // (3) Return nullptr if none found
@@ -383,10 +355,8 @@ namespace TempestKeepHelpers
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || member->getClass() != CLASS_HUNTER)
-                continue;
-
-            if (group->IsAssistant(member->GetGUID()))
+            if (member && member->IsAlive() && member->getClass() == CLASS_HUNTER &&
+                group->IsAssistant(member->GetGUID()))
                 return member;
         }
 
@@ -394,11 +364,9 @@ namespace TempestKeepHelpers
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
-                member->getClass() != CLASS_HUNTER)
-                continue;
-
-            return member;
+            if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) &&
+                member->getClass() == CLASS_HUNTER)
+                return member;
         }
 
         return nullptr;

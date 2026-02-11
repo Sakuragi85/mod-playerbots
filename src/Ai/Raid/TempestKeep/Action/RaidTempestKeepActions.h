@@ -9,16 +9,6 @@
 
 using namespace TempestKeepHelpers;
 
-// General
-
-class TempestKeepEraseTimersAndTrackersAction : public Action
-{
-public:
-    TempestKeepEraseTimersAndTrackersAction(
-        PlayerbotAI* botAI, std::string const name = "tempest keep erase timers and trackers") : Action(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
 // Trash
 
 class CrimsonHandCenturionCastPolymorphAction : public Action
@@ -47,8 +37,8 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool PositionMainTank(Player* mainTank, Unit* alar, int8 locationIndex);
-    bool PositionAssistTank(Player* assistTank, Unit* alar, int8 locationIndex);
+    bool PositionMainTank(Unit* alar, int8 locationIndex);
+    bool PositionAssistTank(Unit* alar, int8 locationIndex);
 };
 
 class AlarMeleeDpsMoveBetweenPlatformsAction : public AttackAction
@@ -149,11 +139,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class VoidReaverRangedUseAggroDumpAbilityAction : public Action
+class VoidReaverUseAggroDumpAbilityAction : public Action
 {
 public:
-    VoidReaverRangedUseAggroDumpAbilityAction(
-        PlayerbotAI* botAI, std::string const name = "void reaver ranged use aggro dump ability") : Action(botAI, name) {}
+    VoidReaverUseAggroDumpAbilityAction(
+        PlayerbotAI* botAI, std::string const name = "void reaver use aggro dump ability") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
 
@@ -165,8 +155,8 @@ public:
     bool Execute(Event event) override;
 
 private:
-    Position GetRangedBotPosition(
-        const Position& center, float radius, uint8 botsPerRing, float offsetArc, uint8 botIndex, float botZ);
+    int GetHealerIndex(Group* group, int& healerCount);
+    int GetRangedDpsIndex(Group* group, int& rangedDpsCount);
 };
 
 // High Astromancer Solarian
@@ -206,14 +196,6 @@ private:
     std::pair<Unit*, Unit*> GetSolariumPriests(PlayerbotAI* botAI);
     std::vector<Player*> GetMeleeBots(Group* group);
     Unit* AssignSolariumPriestsToBots(const std::pair<Unit*, Unit*>& priestsPair, const std::vector<Player*>& meleeMembers);
-};
-
-class HighAstromancerSolarianTankVoidwalkerAction : public AttackAction
-{
-public:
-    HighAstromancerSolarianTankVoidwalkerAction(
-        PlayerbotAI* botAI, std::string const name = "high astromancer solarian tank voidwalker") : AttackAction(botAI, name) {}
-    bool Execute(Event event) override;
 };
 
 class HighAstromancerSolarianCastFearWardOnMainTankAction : public Action
@@ -382,6 +364,10 @@ public:
     KaelthasSunstriderHandlePhoenixesAndEggsAction(
         PlayerbotAI* botAI, std::string const name = "kael'thas sunstrider handle phoenixes and eggs") : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
+
+private:
+    bool AssistTanksPickUpPhoenixes();
+    bool NonTanksDestroyEggsAndAvoidPhoenixes();
 };
 
 class KaelthasSunstriderBreakMindControlAction : public AttackAction
