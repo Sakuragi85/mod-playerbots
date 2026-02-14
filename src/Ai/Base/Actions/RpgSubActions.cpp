@@ -77,9 +77,9 @@ void RpgHelper::setFacing(GuidPosition guidPosition)
 void RpgHelper::setDelay(bool waitForGroup)
 {
     if (!botAI->HasRealPlayerMaster() || (waitForGroup && botAI->GetGroupLeader() == bot && bot->GetGroup()))
-        botAI->SetNextCheckDelay(sPlayerbotAIConfig->rpgDelay);
+        botAI->SetNextCheckDelay(sPlayerbotAIConfig.rpgDelay);
     else
-        botAI->SetNextCheckDelay(sPlayerbotAIConfig->rpgDelay / 5);
+        botAI->SetNextCheckDelay(sPlayerbotAIConfig.rpgDelay / 5);
 }
 
 bool RpgSubAction::isPossible() { return rpg->guidP() && rpg->guidP().GetWorldObject(); }
@@ -150,7 +150,7 @@ bool RpgTaxiAction::Execute(Event event)
     bot->GetSession()->HandleCancelMountAuraOpcode(emptyPacket);
 
     uint32 node =
-        sObjectMgr->GetNearestTaxiNode(guidP.getX(), guidP.getY(), guidP.getZ(), guidP.getMapId(), bot->GetTeamId());
+        sObjectMgr->GetNearestTaxiNode(guidP.GetPositionX(), guidP.GetPositionY(), guidP.GetPositionZ(), guidP.GetMapId(), bot->GetTeamId());
 
     std::vector<uint32> nodes;
     for (uint32 i = 0; i < sTaxiPathStore.GetNumRows(); ++i)
@@ -208,7 +208,7 @@ bool RpgDiscoverAction::Execute(Event event)
     GuidPosition guidP = rpg->guidP();
 
     uint32 node =
-        sObjectMgr->GetNearestTaxiNode(guidP.getX(), guidP.getY(), guidP.getZ(), guidP.getMapId(), bot->GetTeamId());
+        sObjectMgr->GetNearestTaxiNode(guidP.GetPositionX(), guidP.GetPositionY(), guidP.GetPositionZ(), guidP.GetMapId(), bot->GetTeamId());
 
     if (!node)
         return false;
@@ -392,7 +392,7 @@ bool RpgTradeUsefulAction::Execute(Event event)
             bot->Say("Start trade with" + chat->FormatWorldobject(player),
                      (bot->GetTeamId() == TEAM_ALLIANCE ? LANG_COMMON : LANG_ORCISH));
 
-        botAI->SetNextCheckDelay(sPlayerbotAIConfig->rpgDelay);
+        botAI->SetNextCheckDelay(sPlayerbotAIConfig.rpgDelay);
         return true;
     }
 
@@ -402,7 +402,7 @@ bool RpgTradeUsefulAction::Execute(Event event)
 bool RpgDuelAction::isUseful()
 {
     // do not offer duel in non pvp areas
-    if (sPlayerbotAIConfig->IsInPvpProhibitedZone(bot->GetZoneId()))
+    if (sPlayerbotAIConfig.IsInPvpProhibitedZone(bot->GetZoneId()))
         return false;
 
     // Players can only fight a duel with each other outside (=not inside dungeons and not in capital cities)

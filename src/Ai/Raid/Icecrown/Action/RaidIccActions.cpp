@@ -1551,8 +1551,10 @@ Position IccFestergutSporeAction::CalculateSpreadPosition()
     float angle = (bot->GetGUID().GetCounter() % 16) * (M_PI / 8);
 
     Position spreadRangedPos = ICC_FESTERGUT_RANGED_SPORE;
-    spreadRangedPos.m_positionX += cos(angle) * SPREAD_RADIUS;
-    spreadRangedPos.m_positionY += sin(angle) * SPREAD_RADIUS;
+    spreadRangedPos.Relocate(spreadRangedPos.GetPositionX() + cos(angle) * SPREAD_RADIUS,
+                             spreadRangedPos.GetPositionY() + sin(angle) * SPREAD_RADIUS,
+                             spreadRangedPos.GetPositionZ(),
+                             spreadRangedPos.GetOrientation());
 
     return spreadRangedPos;
 }
@@ -6810,7 +6812,7 @@ bool IccLichKingShadowTrapAction::Execute(Event event)
 
     Difficulty diff = bot->GetRaidDifficulty();
 
-    if (sPlayerbotAIConfig->EnableICCBuffs && diff && (diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC))
+    if (sPlayerbotAIConfig.EnableICCBuffs && diff && (diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC))
     {
         //-------CHEAT-------
         if (!bot->HasAura(SPELL_EXPERIENCED))
@@ -7006,7 +7008,7 @@ bool IccLichKingWinterAction::Execute(Event event)
 
     Difficulty diff = bot->GetRaidDifficulty();
 
-    if (sPlayerbotAIConfig->EnableICCBuffs && diff && (diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC))
+    if (sPlayerbotAIConfig.EnableICCBuffs && diff && (diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC))
     {
         //------CHEAT-------
         if (!bot->HasAura(SPELL_EXPERIENCED))
@@ -7792,7 +7794,7 @@ bool IccLichKingAddsAction::Execute(Event event)
 
     Difficulty diff = bot->GetRaidDifficulty();
 
-    if (sPlayerbotAIConfig->EnableICCBuffs && diff && (diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC))
+    if (sPlayerbotAIConfig.EnableICCBuffs && diff && (diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC))
     {
         //------CHEAT-------
         if (!bot->HasAura(SPELL_EXPERIENCED))
@@ -9192,7 +9194,7 @@ void IccLichKingAddsAction::HandleValkyrAssignment(const std::vector<Unit*>& gra
         bot->SetFacingToObject(myValkyr);
         Difficulty diff = bot->GetRaidDifficulty();
 
-        if (sPlayerbotAIConfig->EnableICCBuffs && diff && (diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC))
+        if (sPlayerbotAIConfig.EnableICCBuffs && diff && (diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC))
         {
             //---------CHEAT---------
             if (!myValkyr->HasAura(SPELL_HAMMER_OF_JUSTICE))

@@ -85,7 +85,7 @@ bool RpgAction::SetNextRpgAction()
                     isChecked = true;
 
                     Action* action = botAI->GetAiObjectContext()->GetAction(nextAction.getName());
-                    if (!dynamic_cast<RpgEnabled*>(action) || !action->isPossible() || !action->isUseful())
+                    if (!dynamic_cast<RpgEnabled*>(action) || !action->isUseful() || !action->isPossible())
                         continue;
 
                     actions.push_back(action);
@@ -130,7 +130,7 @@ bool RpgAction::SetNextRpgAction()
 
     std::mt19937 gen(time(0));
 
-    sTravelMgr->weighted_shuffle(actions.begin(), actions.end(), relevances.begin(), relevances.end(), gen);
+    TravelMgr::instance().weighted_shuffle(actions.begin(), actions.end(), relevances.begin(), relevances.end(), gen);
 
     Action* action = actions.front();
 

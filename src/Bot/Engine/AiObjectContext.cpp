@@ -15,8 +15,6 @@
 #include "PaladinAiObjectContext.h"
 #include "Playerbots.h"
 #include "PriestAiObjectContext.h"
-#include "RaidUlduarActionContext.h"
-#include "RaidUlduarTriggerContext.h"
 #include "RogueAiObjectContext.h"
 #include "ShamanAiObjectContext.h"
 #include "SharedValueContext.h"
@@ -45,12 +43,16 @@
 #include "Ai/Raid/GruulsLair/RaidGruulsLairTriggerContext.h"
 #include "Ai/Raid/Naxxramas/RaidNaxxActionContext.h"
 #include "Ai/Raid/Naxxramas/RaidNaxxTriggerContext.h"
+#include "Ai/Raid/SerpentshrineCavern/RaidSSCActionContext.h"
+#include "Ai/Raid/SerpentshrineCavern/RaidSSCTriggerContext.h"
 #include "Ai/Raid/EyeOfEternity/RaidEoEActionContext.h"
 #include "Ai/Raid/EyeOfEternity/RaidEoETriggerContext.h"
 #include "Ai/Raid/VaultOfArchavon/RaidVoAActionContext.h"
 #include "Ai/Raid/VaultOfArchavon/RaidVoATriggerContext.h"
 #include "Ai/Raid/ObsidianSanctum/RaidOsActionContext.h"
 #include "Ai/Raid/ObsidianSanctum/RaidOsTriggerContext.h"
+#include "Ai/Raid/Ulduar/RaidUlduarActionContext.h"
+#include "Ai/Raid/Ulduar/RaidUlduarTriggerContext.h"
 #include "Ai/Raid/Onyxia/RaidOnyxiaActionContext.h"
 #include "Ai/Raid/Onyxia/RaidOnyxiaTriggerContext.h"
 #include "Ai/Raid/Icecrown/RaidIccActionContext.h"
@@ -118,6 +120,7 @@ void AiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Act
     actionContexts.Add(new RaidMagtheridonActionContext());
     actionContexts.Add(new RaidGruulsLairActionContext());
     actionContexts.Add(new RaidNaxxActionContext());
+    actionContexts.Add(new RaidSSCActionContext());
     actionContexts.Add(new RaidOsActionContext());
     actionContexts.Add(new RaidEoEActionContext());
     actionContexts.Add(new RaidVoAActionContext());
@@ -153,6 +156,7 @@ void AiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Tr
     triggerContexts.Add(new RaidMagtheridonTriggerContext());
     triggerContexts.Add(new RaidGruulsLairTriggerContext());
     triggerContexts.Add(new RaidNaxxTriggerContext());
+    triggerContexts.Add(new RaidSSCTriggerContext());
     triggerContexts.Add(new RaidOsTriggerContext());
     triggerContexts.Add(new RaidEoETriggerContext());
     triggerContexts.Add(new RaidVoATriggerContext());

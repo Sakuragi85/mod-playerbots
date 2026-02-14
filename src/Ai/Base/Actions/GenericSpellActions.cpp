@@ -78,34 +78,6 @@ bool CastSpellAction::Execute(Event event)
     return botAI->CastSpell(spell, GetTarget());
 }
 
-bool CastSpellAction::isPossible()
-{
-    if (botAI->IsInVehicle() && !botAI->IsInVehicle(false, false, true))
-    {
-        if (!sPlayerbotAIConfig->logInGroupOnly || (bot->GetGroup() && botAI->HasRealPlayerMaster()))
-        {
-            LOG_DEBUG("playerbots", "Can cast spell failed. Vehicle. - bot name: {}", bot->GetName());
-        }
-        return false;
-    }
-
-    if (spell == "mount" && !bot->IsMounted() && !bot->IsInCombat())
-        return true;
-
-    if (spell == "mount" && bot->IsInCombat())
-    {
-        if (!sPlayerbotAIConfig->logInGroupOnly || (bot->GetGroup() && botAI->HasRealPlayerMaster()))
-        {
-            LOG_DEBUG("playerbots", "Can cast spell failed. Mount. - bot name: {}", bot->GetName());
-        }
-        bot->Dismount();
-        return false;
-    }
-
-    // Spell* currentSpell = bot->GetCurrentSpell(CURRENT_GENERIC_SPELL); //not used, line marked for removal.
-    return botAI->CanCastSpell(spell, GetTarget());
-}
-
 bool CastSpellAction::isUseful()
 {
     if (botAI->IsInVehicle() && !botAI->IsInVehicle(false, false, true))
@@ -127,13 +99,40 @@ bool CastSpellAction::isUseful()
     if (!spellTarget->IsInWorld() || spellTarget->GetMapId() != bot->GetMapId())
         return false;
 
-    // float combatReach = bot->GetCombatReach() + spellTarget->GetCombatReach();
+    // float combatReach = bot->GetCombatReach() + target->GetCombatReach();
     // if (!botAI->IsRanged(bot))
     //     combatReach += 4.0f / 3.0f;
 
-    return spellTarget &&
-           AI_VALUE2(bool, "spell cast useful",
-                     spell);  // && sServerFacade->GetDistance2d(bot, spellTarget) <= (range + combatReach);
+    return AI_VALUE2(bool, "spell cast useful", spell);
+           // && ServerFacade::instance().GetDistance2d(bot, target) <= (range + combatReach);
+}
+
+bool CastSpellAction::isPossible()
+{
+    if (botAI->IsInVehicle() && !botAI->IsInVehicle(false, false, true))
+    {
+        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && botAI->HasRealPlayerMaster()))
+        {
+            LOG_DEBUG("playerbots", "Can cast spell failed. Vehicle. - bot name: {}", bot->GetName());
+        }
+        return false;
+    }
+
+    if (spell == "mount" && !bot->IsMounted() && !bot->IsInCombat())
+        return true;
+
+    if (spell == "mount" && bot->IsInCombat())
+    {
+        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && botAI->HasRealPlayerMaster()))
+        {
+            LOG_DEBUG("playerbots", "Can cast spell failed. Mount. - bot name: {}", bot->GetName());
+        }
+        bot->Dismount();
+        return false;
+    }
+
+    // Spell* currentSpell = bot->GetCurrentSpell(CURRENT_GENERIC_SPELL); //not used, line marked for removal.
+    return botAI->CanCastSpell(spell, GetTarget());
 }
 
 CastMeleeSpellAction::CastMeleeSpellAction(PlayerbotAI* botAI, std::string const spell) : CastSpellAction(botAI, spell)
