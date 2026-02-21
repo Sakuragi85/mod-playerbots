@@ -497,11 +497,11 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::Execute(Event /*event*/)
 
 bool AlarAvoidFlamePatchesAndDiveBombsAction::AvoidFlamePatch()
 {
-    constexpr float maxSearchRadius = 40.0f;
+    constexpr float searchRadius = 40.0f;
     constexpr float hazardRadius = 8.0f;
 
     std::vector<Unit*> flamePatches =
-        GetAllHazardTriggers(botAI, bot, NPC_FLAME_PATCH, maxSearchRadius);
+        GetAllHazardTriggers(bot, NPC_FLAME_PATCH, searchRadius);
 
     for (Unit* flamePatch : flamePatches)
     {
@@ -1549,49 +1549,40 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::ShouldBotLootWeapon(uint32 we
 bool KaelthasSunstriderLootLegendaryWeaponsAction::LootWeapon(
     uint32 weaponEntry, uint32 itemId)
 {
-    auto const& corpses = context->GetValue<GuidVector>("nearest corpses")->Get();
+    constexpr float searchRadius = 150.0f;
+    Creature* weapon = bot->FindNearestCreature(weaponEntry, searchRadius, false);
+
+    if (!weapon || weapon->IsAlive())
+        return false;
+
+    LootObject loot(bot, weapon->GetGUID());
+    if (!loot.IsLootPossible(bot))
+        return false;
+
+    context->GetValue<LootObject>("loot target")->Set(loot);
+
     const float maxLootRange = sPlayerbotAIConfig.lootDistance;
+    constexpr float distFromObject = 2.0f;
 
-    for (auto const& guid : corpses)
-    {
-        LootObject loot(bot, guid);
-        if (!loot.IsLootPossible(bot))
-            continue;
+    if (bot->GetDistance(weapon) > maxLootRange)
+        return MoveTo(weapon, distFromObject, MovementPriority::MOVEMENT_FORCED);
 
-        WorldObject* object = loot.GetWorldObject(bot);
-        if (!object)
-            continue;
+    OpenLootAction open(botAI);
+    bool opened = open.Execute(Event());
+    if (!opened)
+        return opened;
 
-        Creature* creature = object->ToCreature();
-        if (!creature || creature->GetEntry() != weaponEntry || creature->IsAlive())
-            continue;
+    if (bot->HasItemCount(itemId, 1, false))
+        return false;
 
-        context->GetValue<LootObject>("loot target")->Set(loot);
+    bot->SetLootGUID(weapon->GetGUID());
 
-        constexpr float distFromObject = 2.0f;
-        if (bot->GetDistance(object) > maxLootRange)
-            return MoveTo(object, distFromObject, MovementPriority::MOVEMENT_FORCED);
+    constexpr uint8 weaponIndex = 0;
+    WorldPacket* packet = new WorldPacket(CMSG_AUTOSTORE_LOOT_ITEM, 1);
+    *packet << weaponIndex;
+    bot->GetSession()->QueuePacket(packet);
 
-        OpenLootAction open(botAI);
-        bool opened = open.Execute(Event());
-        if (!opened)
-            return opened;
-
-        Player* receiver = bot;
-        if (!receiver || !receiver->IsInWorld() || receiver->HasItemCount(itemId, 1, false))
-            continue;
-
-        receiver->SetLootGUID(guid);
-
-        constexpr uint8 weaponIndex = 0;
-        WorldPacket* packet = new WorldPacket(CMSG_AUTOSTORE_LOOT_ITEM, 1);
-        *packet << weaponIndex;
-        receiver->GetSession()->QueuePacket(packet);
-
-        return true;
-    }
-
-    return false;
+    return true;
 }
 
 bool KaelthasSunstriderUseLegendaryWeaponsAction::Execute(Event /*event*/)
@@ -1718,9 +1709,9 @@ bool KaelthasSunstriderMainTankPositionBossAction::Execute(Event /*event*/)
 
 bool KaelthasSunstriderAvoidFlameStrikeAction::Execute(Event /*event*/)
 {
-    constexpr float maxSearchRadius = 40.0f;
+    constexpr float searchRadius = 40.0f;
     std::vector<Unit*> flameStrikes =
-        GetAllHazardTriggers(botAI, bot, NPC_FLAME_STRIKE_TRIGGER, maxSearchRadius);
+        GetAllHazardTriggers(bot, NPC_FLAME_STRIKE_TRIGGER, searchRadius);
 
     if (flameStrikes.empty())
         return false;
@@ -1758,7 +1749,7 @@ bool KaelthasSunstriderHandlePhoenixesAndEggsAction::Execute(Event /*event*/)
 bool KaelthasSunstriderHandlePhoenixesAndEggsAction::AssistTanksPickUpPhoenixes()
 {
     std::vector<Unit*> phoenixes;
-    auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+    auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
     for (auto const& npcGuid : npcs)
     {
         Unit* unit = botAI->GetUnit(npcGuid);
@@ -1927,8 +1918,6 @@ bool KaelthasSunstriderBreakThroughShockBarrierAction::Execute(Event /*event*/)
     return false;
 }
 
-// Bots generally immediately fall to the ground after Gravity Lapse, so this action
-// name is kind of a misnomer (though bots are still in a flying state)
 bool KaelthasSunstriderSpreadOutInMidairAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();

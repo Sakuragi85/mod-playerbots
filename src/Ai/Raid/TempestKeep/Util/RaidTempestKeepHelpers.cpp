@@ -39,16 +39,17 @@ namespace TempestKeepHelpers
         return nearestPlayer;
     }
 
-    std::vector<Unit*> GetAllHazardTriggers(
-        PlayerbotAI* botAI, Player* bot, uint32 npcEntry, float maxSearchRadius)
+    std::vector<Unit*> GetAllHazardTriggers(Player* bot, uint32 npcEntry, float searchRadius)
     {
         std::vector<Unit*> hazardTriggers;
-        auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-        for (auto const& npcGuid : npcs)
+
+        std::list<Creature*> creatureList;
+        bot->GetCreatureListWithEntryInGrid(creatureList, npcEntry, searchRadius);
+
+        for (Creature* creature : creatureList)
         {
-            Unit* unit = botAI->GetUnit(npcGuid);
-            if (unit && unit->GetEntry() == npcEntry && bot->GetExactDist2d(unit) < maxSearchRadius)
-                hazardTriggers.push_back(unit);
+            if (creature && creature->IsAlive())
+                hazardTriggers.push_back(creature);
         }
 
         return hazardTriggers;
@@ -265,13 +266,15 @@ namespace TempestKeepHelpers
         Unit* secondEmber = nullptr;
 
         for (auto const& guid :
-             botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get())
+            botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get())
         {
             Unit* unit = botAI->GetUnit(guid);
             if (unit && unit->IsAlive() && unit->GetEntry() == NPC_EMBER_OF_ALAR)
             {
                 if (!firstEmber)
+                {
                     firstEmber = unit;
+                }
                 else if (!secondEmber)
                 {
                     secondEmber = unit;
@@ -372,39 +375,27 @@ namespace TempestKeepHelpers
         return nullptr;
     }
 
-    bool IsAnyLegendaryWeaponDead(PlayerbotAI* botAI, Player* bot)
+    bool IsAnyLegendaryWeaponDead(Player* bot)
     {
-        static const std::array<std::pair<const char*, uint32>, 7> weapons =
+        static const std::array<uint32, 7> weaponEntries =
         {
-            std::make_pair("staff of disintegration", NPC_STAFF_OF_DISINTEGRATION),
-            std::make_pair("cosmic infuser", NPC_COSMIC_INFUSER),
-            std::make_pair("infinity blade", NPC_INFINITY_BLADES),
-            std::make_pair("warp slicer", NPC_WARP_SLICER),
-            std::make_pair("phaseshift bulwark", NPC_PHASESHIFT_BULWARK),
-            std::make_pair("netherstrand longbow", NPC_NETHERSTRAND_LONGBOW),
-            std::make_pair("devastation", NPC_DEVASTATION)
+            NPC_STAFF_OF_DISINTEGRATION,
+            NPC_COSMIC_INFUSER,
+            NPC_INFINITY_BLADES,
+            NPC_WARP_SLICER,
+            NPC_PHASESHIFT_BULWARK,
+            NPC_NETHERSTRAND_LONGBOW,
+            NPC_DEVASTATION
         };
 
-        for (auto const& [name, entry] : weapons)
+        constexpr float searchRadius = 100.0f;
+
+        for (uint32 entry : weaponEntries)
         {
-            Unit* weapon =
-                botAI->GetAiObjectContext()->GetValue<Unit*>("find target", name)->Get();
-            if (weapon && weapon->IsAlive())
-                continue;
+            Creature* weapon = bot->FindNearestCreature(entry, searchRadius, false);
 
-            auto const& corpses =
-                botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest corpses")->Get();
-            for (auto const& guid : corpses)
-            {
-                LootObject loot(bot, guid);
-                WorldObject* object = loot.GetWorldObject(bot);
-                if (!object)
-                    continue;
-
-                if (Creature* creature = object->ToCreature();
-                    creature && creature->GetEntry() == entry && !creature->IsAlive())
-                    return true;
-            }
+            if (weapon && !weapon->IsAlive())
+                return true;
         }
 
         return false;
@@ -412,49 +403,22 @@ namespace TempestKeepHelpers
 
     bool HasEquippableItemForSlot(Player* bot, uint8 slot)
     {
-        for (uint8 bag = INVENTORY_SLOT_BAG_START; bag < INVENTORY_SLOT_BAG_END; ++bag)
+        for (uint8 i = 0; i < 5; ++i)
         {
-            for (uint8 bagSlot = 0; bagSlot < MAX_BAG_SIZE; ++bagSlot)
+            uint8 bag = (i == 0) ? INVENTORY_SLOT_BAG_0 : (INVENTORY_SLOT_BAG_START + i - 1);
+            uint8 startSlot = (bag == INVENTORY_SLOT_BAG_0) ? INVENTORY_SLOT_ITEM_START : 0;
+            uint8 endSlot = (bag == INVENTORY_SLOT_BAG_0) ? INVENTORY_SLOT_ITEM_END :
+                            (bot->GetBagByPos(bag) ? bot->GetBagByPos(bag)->GetBagSize() : 0);
+
+            for (uint8 bagSlot = startSlot; bagSlot < endSlot; ++bagSlot)
             {
                 Item* item = bot->GetItemByPos(bag, bagSlot);
-                if (!item)
-                    continue;
-
-                ItemTemplate const* proto = item->GetTemplate();
-                if (!proto)
+                if (!item || !item->GetTemplate())
                     continue;
 
                 uint16 dest = 0;
-                if (bot->CanEquipItem(slot, dest, item, false))
+                if (bot->CanEquipItem(slot, dest, item, false) == EQUIP_ERR_OK)
                     return true;
-            }
-        }
-
-        return false;
-    }
-
-    bool HasEquippableOffhand(Player* bot)
-    {
-        for (uint8 bag = INVENTORY_SLOT_BAG_START; bag < INVENTORY_SLOT_BAG_END; ++bag)
-        {
-            for (uint8 bagSlot = 0; bagSlot < MAX_BAG_SIZE; ++bagSlot)
-            {
-                Item* item = bot->GetItemByPos(bag, bagSlot);
-                if (!item)
-                    continue;
-
-                ItemTemplate const* proto = item->GetTemplate();
-                if (!proto)
-                    continue;
-
-                if (proto->InventoryType == INVTYPE_SHIELD ||
-                    proto->InventoryType == INVTYPE_WEAPONOFFHAND ||
-                    proto->InventoryType == INVTYPE_HOLDABLE)
-                {
-                    uint16 dest = 0;
-                    if (bot->CanEquipItem(EQUIPMENT_SLOT_OFFHAND, dest, item, false))
-                        return true;
-                }
             }
         }
 
