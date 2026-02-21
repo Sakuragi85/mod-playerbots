@@ -68,8 +68,8 @@ bool NalorakkPullingBossTrigger::IsActive()
 
 bool NalorakkBossSwitchesFormsTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "nalorakk") &&
-           (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, true));
+    return (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, true)) &&
+           AI_VALUE2(Unit*, "find target", "nalorakk");
 }
 
 bool NalorakkBossCastsSurgeTrigger::IsActive()
@@ -97,7 +97,7 @@ bool JanalaiBossEngagedByTanksTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
         return false;
 
-    return !AnyNearbyNpcWithEntry(botAI, NPC_FIRE_BOMB);
+    return !HasFireBombNearby(botAI, bot);
 }
 
 bool JanalaiBossCastsFlameBreathTrigger::IsActive()
@@ -108,22 +108,29 @@ bool JanalaiBossCastsFlameBreathTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
         return false;
 
-    if (GetFirstAliveUnitByEntry(botAI, NPC_AMANI_DRAGONHAWK_HATCHLING))
+    if (AI_VALUE2(Unit*, "find target", "amani dragonhawk hatchling"))
         return false;
 
-    return !AnyNearbyNpcWithEntry(botAI, NPC_FIRE_BOMB);
+    return !HasFireBombNearby(botAI, bot);
 }
 
 bool JanalaiBossSummoningFireBombsTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "jan'alai") &&
-           AnyNearbyNpcWithEntry(botAI, NPC_FIRE_BOMB);
+    if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
+        return false;
+
+    return HasFireBombNearby(botAI, bot);
 }
 
-bool JanalaiAmaniHatchersSpawnedTrigger::IsActive()
+bool JanalaiAmanishiHatchersSpawnedTrigger::IsActive()
 {
-    return botAI->IsRangedDps(bot) &&
-           GetFirstAliveUnitByEntry(botAI, NPC_AMANI_HATCHER);
+    if (!botAI->IsRangedDps(bot))
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
+        return false;
+
+    return bot->FindNearestCreature(NPC_AMANISHI_HATCHER, 40.0f);
 }
 
 // Halazzi <Lynx Avatar>
@@ -139,14 +146,14 @@ bool HalazziPullingBossTrigger::IsActive()
 
 bool HalazziBossEngagedByMainTankTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "halazzi") &&
-           botAI->IsMainTank(bot);
+    return botAI->IsMainTank(bot) &&
+           AI_VALUE2(Unit*, "find target", "halazzi");
 }
 
 bool HalazziBossSummonsSpiritLynxTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "halazzi") &&
-           botAI->IsAssistTankOfIndex(bot, 0, true);
+    return botAI->IsAssistTankOfIndex(bot, 0, true) &&
+           AI_VALUE2(Unit*, "find target", "halazzi");
 }
 
 bool HalazziDeterminingDpsTargetTrigger::IsActive()
@@ -193,17 +200,21 @@ bool HexLordMalacrassPartyMemberIsMindControlledTrigger::IsActive()
         bot->getClass() != CLASS_WARLOCK)
         return false;
 
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || member == bot)
-                continue;
+    if (!AI_VALUE2(Unit*, "find target", "hex lord malacrass"))
+        return false;
 
-            if (member->HasAura(SPELL_MIND_CONTROL))
-                return true;
-        }
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || member == bot)
+            continue;
+
+        if (member->HasAura(SPELL_MIND_CONTROL))
+            return true;
     }
 
     return false;
@@ -244,10 +255,7 @@ bool ZuljinBossIsChannelingWhirlwindInTrollFormTrigger::IsActive()
     if (!zuljin || !zuljin->HasAura(SPELL_WHIRLWIND))
         return false;
 
-    if (botAI->IsTank(bot) && zuljin->GetVictim() == bot)
-        return false;
-
-    return true;
+    return (botAI->IsTank(bot) && zuljin->GetVictim() == bot);
 }
 
 bool ZuljinBossIsSummoningCyclonesInEagleFormTrigger::IsActive()
@@ -256,7 +264,8 @@ bool ZuljinBossIsSummoningCyclonesInEagleFormTrigger::IsActive()
     if (!zuljin || !zuljin->HasAura(SPELL_SHAPE_OF_THE_EAGLE))
         return false;
 
-    return AnyNearbyNpcWithEntry(botAI, NPC_FEATHER_VORTEX);
+    constexpr float searchRadius = 40.0f;
+    return bot->FindNearestCreature(NPC_FEATHER_VORTEX, searchRadius, true);
 }
 
 bool ZuljinBossCastsAoeAbilitiesInDragonhawkFormTrigger::IsActive()

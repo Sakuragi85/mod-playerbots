@@ -135,7 +135,7 @@ bool NalorakkTanksPositionBossAction::MainTankPositionTrollForm(Unit* nalorakk)
             return Attack(nalorakk);
 
         if (nalorakk->GetVictim() != bot)
-            return botAI->DoSpecificAction("taunt spell", Event(), false);
+            return botAI->DoSpecificAction("taunt spell", Event(), true);
 
         const Position& position = NALORAKK_TANK_POSITION;
         float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
@@ -179,7 +179,7 @@ bool NalorakkTanksPositionBossAction::FirstAssistTankPositionBearForm(Unit* nalo
             return Attack(nalorakk);
 
         if (nalorakk->GetVictim() != bot)
-            return botAI->DoSpecificAction("taunt spell", Event(), false);
+            return botAI->DoSpecificAction("taunt spell", Event(), true);
 
         const Position& position = NALORAKK_TANK_POSITION;
         float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
@@ -319,7 +319,7 @@ bool JanalaiSpreadRangedInCircleAction::Execute(Event event)
 
 bool JanalaiAvoidFireBombsAction::Execute(Event event)
 {
-    auto const& bombs = GetAllFireBombTriggers(botAI, bot);
+    auto const& bombs = GetAllFireBombTriggers();
     if (bombs.empty())
         return false;
 
@@ -438,27 +438,25 @@ bool JanalaiAvoidFireBombsAction::IsPathSafeFromFireBombs(const Position& start,
     return true;
 }
 
-std::vector<Unit*> JanalaiAvoidFireBombsAction::GetAllFireBombTriggers(
-    PlayerbotAI* botAI, Player* bot)
+std::vector<Unit*> JanalaiAvoidFireBombsAction::GetAllFireBombTriggers()
 {
     std::vector<Unit*> fireBombs;
-    auto const& npcs =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-    for (auto const& npcGuid : npcs)
+    constexpr float searchRadius = 40.0f;
+    std::list<Creature*> creatureList;
+    bot->GetCreatureListWithEntryInGrid(creatureList, NPC_FIRE_BOMB, searchRadius);
+
+    for (Creature* creature : creatureList)
     {
-        constexpr float maxSearchRadius = 40.0f;
-        Unit* unit = botAI->GetUnit(npcGuid);
-        if (unit && unit->GetEntry() == NPC_FIRE_BOMB &&
-            bot->GetExactDist2d(unit) < maxSearchRadius)
-            fireBombs.push_back(unit);
+        if (creature && creature->IsAlive())
+            fireBombs.push_back(creature);
     }
 
     return fireBombs;
 }
 
-bool JanalaiMarkAmaniHatchersAction::Execute(Event event)
+bool JanalaiMarkAmanishiHatchersAction::Execute(Event event)
 {
-    auto [hatcherLow, hatcherHigh] = GetAmaniHatcherPair(botAI);
+    auto [hatcherLow, hatcherHigh] = GetAmanishiHatcherPair(botAI);
 
     // When hatchers spawn, mark one with Skull and the other with Moon
     if (hatcherLow && hatcherHigh && hatcherHigh != hatcherLow)
@@ -536,7 +534,7 @@ bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event event)
             return Attack(lynx);
 
         if (lynx->GetVictim() != bot)
-            return botAI->DoSpecificAction("taunt spell", Event(), false);
+            return botAI->DoSpecificAction("taunt spell", Event(), true);
 
         const Position& position = HALAZZI_TANK_POSITION;
         float distToPosition = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
@@ -639,10 +637,30 @@ bool HexLordMalacrassAssignDpsPriorityAction::Execute(Event event)
         NPC_HEX_LORD_MALACRASS
     };
 
-    if (Unit* target = GetFirstAliveUnitByEntries(botAI, priorityEntries))
+    auto const& targets =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+    Unit* bestTarget = nullptr;
+
+    for (uint32 entry : priorityEntries)
     {
-        MarkTargetWithSkull(bot, target);
-        SetRtiTarget(botAI, "skull", target);
+        for (auto const& guid : targets)
+        {
+            Unit* unit = botAI->GetUnit(guid);
+            if (unit && unit->IsAlive() && unit->GetEntry() == entry)
+            {
+                bestTarget = unit;
+                break;
+            }
+        }
+
+        if (bestTarget)
+            break;
+    }
+
+    if (bestTarget)
+    {
+        MarkTargetWithSkull(bot, bestTarget);
+        SetRtiTarget(botAI, "skull", bestTarget);
     }
 
     return false;
@@ -654,8 +672,11 @@ bool HexLordMalacrassPurgeBuffFromBossAction::Execute(Event event)
     if (!malacrass)
         return false;
 
-    const char* dispelSpells[] = {
-        "arcane shot", "devour magic", "dispel magic", "purge", "spellsteal" };
+    static const std::array<const char*, 5> dispelSpells =
+    {
+        "arcane shot", "devour magic", "dispel magic", "purge", "spellsteal"
+    };
+
     for (const char* spellName : dispelSpells)
     {
         if (botAI->CanCastSpell(spellName, malacrass))
@@ -688,7 +709,11 @@ bool HexLordMalacrassDispelMindControlAction::Execute(Event event)
     if (!mcTarget)
         return false;
 
-    const char* dispelSpells[] = { "devour magic", "dispel magic", "purge" };
+    static const std::array<const char*, 3> dispelSpells =
+    {
+        "devour magic", "dispel magic", "purge"
+    };
+
     for (const char* spellName : dispelSpells)
     {
         if (botAI->CanCastSpell(spellName, mcTarget))
@@ -767,7 +792,7 @@ bool ZuljinRunAwayFromWhirlwindAction::Execute(Event event)
 
 bool ZuljinAvoidCyclonesAction::Execute(Event event)
 {
-    auto const& cyclones = GetAllCycloneTriggers(botAI, bot);
+    auto const& cyclones = GetAllCycloneTriggers();
     if (cyclones.empty())
         return false;
 
@@ -888,21 +913,17 @@ bool ZuljinAvoidCyclonesAction::IsPathSafeFromCyclones(const Position& start,
     return true;
 }
 
-std::vector<Unit*> ZuljinAvoidCyclonesAction::GetAllCycloneTriggers(
-    PlayerbotAI* botAI, Player* bot)
+std::vector<Unit*> ZuljinAvoidCyclonesAction::GetAllCycloneTriggers()
 {
     std::vector<Unit*> cyclones;
-    auto const& npcs =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-    for (auto const& npcGuid : npcs)
+    constexpr float searchRadius = 40.0f;
+    std::list<Creature*> creatureList;
+    bot->GetCreatureListWithEntryInGrid(creatureList, NPC_FIRE_BOMB, searchRadius);
+
+    for (Creature* creature : creatureList)
     {
-        constexpr float maxSearchRadius = 30.0f;
-        Unit* unit = botAI->GetUnit(npcGuid);
-        if (unit && unit->GetEntry() == NPC_FEATHER_VORTEX &&
-            bot->GetExactDist2d(unit) < maxSearchRadius)
-        {
-            cyclones.push_back(unit);
-        }
+        if (creature && creature->IsAlive())
+            cyclones.push_back(creature);
     }
 
     return cyclones;

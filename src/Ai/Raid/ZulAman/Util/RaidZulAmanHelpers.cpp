@@ -4,51 +4,6 @@
 
 namespace ZulAmanHelpers
 {
-    // General Helpers
-
-    Unit* GetFirstAliveUnitByEntries(PlayerbotAI* botAI, const std::vector<uint32>& entries)
-    {
-        if (!botAI)
-            return nullptr;
-
-        auto npcValue = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs");
-        if (!npcValue)
-            return nullptr;
-
-        auto const& npcs = npcValue->Get();
-        for (uint32 entry : entries)
-        {
-            for (auto const& guid : npcs)
-            {
-                Unit* unit = botAI->GetUnit(guid);
-                if (unit && unit->IsAlive() && unit->GetEntry() == entry)
-                    return unit;
-            }
-        }
-
-        return nullptr;
-    }
-
-    bool AnyNearbyNpcWithEntry(PlayerbotAI* botAI, uint32 entry)
-    {
-        if (!botAI)
-            return false;
-
-        auto npcValue = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs");
-        if (!npcValue)
-            return false;
-
-        auto const& npcs = npcValue->Get();
-        for (auto const& guid : npcs)
-        {
-            Unit* unit = botAI->GetUnit(guid);
-            if (unit && unit->IsAlive() && unit->GetEntry() == entry)
-                return true;
-        }
-
-        return false;
-    }
-
     // Akil'zon <Eagle Avatar>
     const Position AKILZON_TANK_POSITION = { 378.369f, 1407.718f, 74.797f };
 
@@ -61,7 +16,7 @@ namespace ZulAmanHelpers
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() && member->HasAura(SPELL_ELECTRICAL_STORM))
+            if (member && member->HasAura(SPELL_ELECTRICAL_STORM))
                 return member;
         }
 
@@ -73,9 +28,23 @@ namespace ZulAmanHelpers
 
     // Jan'alai <Dragonhawk Avatar>
     const Position JANALAI_TANK_POSITION = { -33.873f, 1149.571f, 19.146f };
-    std::unordered_map<ObjectGuid, Position> janalaiRangedPositions;
 
-    std::pair<Unit*, Unit*> GetAmaniHatcherPair(PlayerbotAI* botAI)
+    bool HasFireBombNearby(PlayerbotAI* botAI, Player* bot)
+    {
+        constexpr float searchRadius = 30.0f;
+        std::list<Creature*> creatureList;
+        bot->GetCreatureListWithEntryInGrid(creatureList, NPC_FIRE_BOMB, searchRadius);
+
+        for (Creature* creature : creatureList)
+        {
+            if (creature && creature->IsAlive())
+                return true;
+        }
+
+        return false;
+    }
+
+    std::pair<Unit*, Unit*> GetAmanishiHatcherPair(PlayerbotAI* botAI)
     {
         Unit* lowest = nullptr;
         Unit* highest = nullptr;
@@ -84,7 +53,7 @@ namespace ZulAmanHelpers
              botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get())
         {
             Unit* unit = botAI->GetUnit(guid);
-            if (unit && unit->GetEntry() == NPC_AMANI_HATCHER)
+            if (unit && unit->GetEntry() == NPC_AMANISHI_HATCHER)
             {
                 if (!lowest || unit->GetGUID().GetCounter() < lowest->GetGUID().GetCounter())
                     lowest = unit;
