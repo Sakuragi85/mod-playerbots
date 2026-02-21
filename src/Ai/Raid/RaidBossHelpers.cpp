@@ -82,8 +82,11 @@ bool IsMechanicTrackerBot(PlayerbotAI* botAI, Player* bot, uint32 mapId, Player*
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || member->GetMapId() != mapId ||
-                !GET_PLAYERBOT_AI(member) || !botAI->IsDps(member))
+            if (!member || !member->IsAlive() || member->GetMapId() != mapId)
+                continue;
+
+            PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+            if (!memberAI || !memberAI->IsDps(member))
                 continue;
 
             if (member != exclude)
@@ -94,22 +97,97 @@ bool IsMechanicTrackerBot(PlayerbotAI* botAI, Player* bot, uint32 mapId, Player*
     return false;
 }
 
-// Return the first matching alive unit from a cell search of nearby npcs
-// More responsive than "find target," but performance cost is much higher
-// Re: using the third parameter (false by default), some units are never considered
-// to be in combat (e.g., totems)
-Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry, bool requireInCombat)
+// Requires the main tank to be alive (IsMainTank() will return the player with
+// the main tank flag, even if dead)
+Player* GetGroupMainTank(PlayerbotAI* botAI, Player* bot)
+{
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive())
+                continue;
+
+            PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+            if (memberAI && memberAI->IsMainTank(member))
+                return member;
+        }
+    }
+
+    return nullptr;
+}
+
+// The below functions require the assist tanks to be alive (the 3rd parameter of
+// IsAssistTankOfIndex() otherwise by default does not require them to be alive)
+Player* GetGroupFirstAssistTank(PlayerbotAI* botAI, Player* bot)
+{
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive())
+                continue;
+
+            PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+            if (memberAI && memberAI->IsAssistTankOfIndex(member, 0, false))
+                return member;
+        }
+    }
+
+    return nullptr;
+}
+
+Player* GetGroupSecondAssistTank(PlayerbotAI* botAI, Player* bot)
+{
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive())
+                continue;
+
+            PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+            if (memberAI && memberAI->IsAssistTankOfIndex(member, 1, false))
+                return member;
+        }
+    }
+
+    return nullptr;
+}
+
+Player* GetGroupThirdAssistTank(PlayerbotAI* botAI, Player* bot)
+{
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive())
+                continue;
+
+            PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+            if (memberAI && memberAI->IsAssistTankOfIndex(member, 2, false))
+                return member;
+        }
+    }
+
+    return nullptr;
+}
+
+// Return the first matching alive unit from PossibleTargetsValue within sightDistance from config
+// This intentionally does not work outside of combat
+Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry)
 {
     auto const& npcs =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
     for (auto const& npcGuid : npcs)
     {
         Unit* unit = botAI->GetUnit(npcGuid);
         if (unit && unit->IsAlive() && unit->GetEntry() == entry)
-        {
-            if (!requireInCombat || unit->IsInCombat())
-                return unit;
-        }
+            return unit;
     }
 
     return nullptr;
