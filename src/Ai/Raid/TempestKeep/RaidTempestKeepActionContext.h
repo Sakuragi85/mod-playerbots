@@ -60,6 +60,12 @@ public:
         creators["void reaver spread ranged"] =
             &RaidTempestKeepActionContext::void_reaver_spread_ranged;
 
+        creators["void reaver avoid arcane orb"] =
+            &RaidTempestKeepActionContext::void_reaver_avoid_arcane_orb;
+
+        creators["void reaver erase trackers"] =
+            &RaidTempestKeepActionContext::void_reaver_erase_trackers;
+
         // High Astromancer Solarian
         creators["high astromancer solarian ranged leave space for melee"] =
             &RaidTempestKeepActionContext::high_astromancer_solarian_ranged_leave_space_for_melee;
@@ -192,6 +198,12 @@ private:
 
     static Action* void_reaver_spread_ranged(
         PlayerbotAI* botAI) { return new VoidReaverSpreadRangedAction(botAI); }
+
+    static Action* void_reaver_avoid_arcane_orb(
+        PlayerbotAI* botAI) { return new VoidReaverAvoidArcaneOrbAction(botAI); }
+
+    static Action* void_reaver_erase_trackers(
+        PlayerbotAI* botAI) { return new VoidReaverEraseTrackersAction(botAI); }
 
     // High Astromancer Solarian
     static Action* high_astromancer_solarian_ranged_leave_space_for_melee(
