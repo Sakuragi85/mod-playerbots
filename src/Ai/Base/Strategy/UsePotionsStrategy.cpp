@@ -5,6 +5,8 @@
 
 #include "UsePotionsStrategy.h"
 
+#include "Playerbots.h"
+
 class UsePotionsStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
 public:

@@ -90,8 +90,8 @@ public:
     bool Execute(Event event) override;
 
 protected:
-    bool DoIncompleteQuest(NewRpgInfo::DoQuest& data);
-    bool DoCompletedQuest(NewRpgInfo::DoQuest& data);
+    bool DoIncompleteQuest();
+    bool DoCompletedQuest();
 
     const uint32 poiStayTime = 5 * 60 * 1000;
 };

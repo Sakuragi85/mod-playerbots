@@ -4,12 +4,8 @@
  */
 
 #include "StatsValues.h"
-#include "AiObjectContext.h"
-#include "Group.h"
-#include "Pet.h"
-#include "PlayerbotAIConfig.h"
+#include "Playerbots.h"
 #include "ServerFacade.h"
-#include "Player.h"
 
 Unit* HealthValue::GetTarget()
 {
@@ -188,7 +184,7 @@ bool IsInCombatValue::Calculate()
 
                 if (member->IsInCombat() &&
                     ServerFacade::instance().IsDistanceLessOrEqualThan(ServerFacade::instance().GetDistance2d(member, bot),
-                                                             PlayerbotAIConfig::instance().reactDistance))
+                                                             sPlayerbotAIConfig.reactDistance))
                     return true;
             }
         }

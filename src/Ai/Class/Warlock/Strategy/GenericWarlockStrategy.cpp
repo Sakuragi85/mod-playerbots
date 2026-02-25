@@ -4,6 +4,8 @@
  */
 
 #include "GenericWarlockStrategy.h"
+#include "Strategy.h"
+#include "Playerbots.h"
 
 class GenericWarlockStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {

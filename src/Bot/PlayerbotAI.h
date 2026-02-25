@@ -6,11 +6,13 @@
 #ifndef _PLAYERBOT_PLAYERbotAI_H
 #define _PLAYERBOT_PLAYERbotAI_H
 
+#include <queue>
 #include <stack>
 
 #include "Chat.h"
 #include "ChatFilter.h"
 #include "ChatHelper.h"
+#include "Common.h"
 #include "CreatureData.h"
 #include "Event.h"
 #include "Item.h"

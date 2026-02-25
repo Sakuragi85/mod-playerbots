@@ -1700,7 +1700,7 @@ std::vector<uint32> RandomItemMgr::GetQuestIdsForItem(uint32 itemId)
         }
     }
 
-    return questIds;
+    return std::move(questIds);
 }
 
 uint32 RandomItemMgr::GetUpgrade(Player* player, std::string spec, uint8 slot, uint32 quality, uint32 itemId)
@@ -1827,7 +1827,7 @@ std::vector<uint32> RandomItemMgr::GetUpgradeList(Player* player, std::string sp
 {
     std::vector<uint32> listItems;
     if (!player)
-        return listItems;
+        return std::move(listItems);
 
     // get old item statWeight
     uint32 oldStatWeight = 0;
@@ -1848,7 +1848,7 @@ std::vector<uint32> RandomItemMgr::GetUpgradeList(Player* player, std::string sp
     }
 
     if (!specId)
-        return listItems;
+        return std::move(listItems);
 
     if (itemId && itemInfoCache.find(itemId) != itemInfoCache.end())
     {
@@ -1942,7 +1942,7 @@ std::vector<uint32> RandomItemMgr::GetUpgradeList(Player* player, std::string sp
         LOG_INFO("playerbots", "New Items: {}, Old item:%d, New items max: {}", listItems.size(), oldStatWeight,
                  closestUpgradeWeight);
 
-    return listItems;
+    return std::move(listItems);
 }
 
 bool RandomItemMgr::HasStatWeight(uint32 itemId)
@@ -2771,8 +2771,9 @@ inline bool IsCraftedBySpellInfo(ItemTemplate const* proto, SpellInfo const* spe
         }
 
         if (proto->ItemId == spellInfo->Reagent[x])
+        {
             return true;
-
+        }
     }
 
     for (uint8 i = 0; i < 3; ++i)
@@ -2780,7 +2781,9 @@ inline bool IsCraftedBySpellInfo(ItemTemplate const* proto, SpellInfo const* spe
         if (spellInfo->Effects[i].Effect == SPELL_EFFECT_CREATE_ITEM)
         {
             if (spellInfo->Effects[i].ItemType == proto->ItemId)
+            {
                 return true;
+            }
         }
     }
 

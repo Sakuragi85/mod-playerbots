@@ -5,6 +5,7 @@
 
 #include "LastMovementValue.h"
 
+#include "Playerbots.h"
 #include "Timer.h"
 
 LastMovement::LastMovement() { clear(); }

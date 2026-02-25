@@ -36,7 +36,9 @@ std::vector<NextAction> toNextActionArray(const std::string actions)
     std::vector<NextAction> res = {};
 
     for (const std::string token : tokens)
+    {
         res.push_back(toNextAction(token));
+    }
 
     return res;
 }

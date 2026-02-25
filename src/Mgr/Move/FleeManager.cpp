@@ -62,9 +62,9 @@ void FleeManager::calculatePossibleDestinations(std::vector<FleePoint*>& points)
     }
     Unit* target = *botAI->GetAiObjectContext()->GetValue<Unit*>("current target");
 
-    float botPosX = startPosition.GetPositionX();
-    float botPosY = startPosition.GetPositionY();
-    float botPosZ = startPosition.GetPositionZ();
+    float botPosX = startPosition.getX();
+    float botPosY = startPosition.getY();
+    float botPosZ = startPosition.getZ();
 
     FleePoint start(botAI, botPosX, botPosY, botPosZ);
     calculateDistanceToCreatures(&start);

@@ -71,13 +71,13 @@ WorldPosition::WorldPosition(std::vector<WorldPosition*> list, WorldPositionCons
         set(*list[urand(0, size - 1)]);
     else if (conType == WP_CENTROID)
     {
-        set(std::accumulate(list.begin(), list.end(), WorldLocation(list[0]->GetMapId(), 0, 0, 0, 0),
+        set(std::accumulate(list.begin(), list.end(), WorldLocation(list[0]->getMapId(), 0, 0, 0, 0),
                             [size](WorldLocation i, WorldPosition* j)
                             {
-                                i.m_positionX += j->GetPositionX() / size;
-                                i.m_positionY += j->GetPositionY() / size;
-                                i.m_positionZ += j->GetPositionZ() / size;
-                                i.NormalizeOrientation(i.m_orientation += j->GetOrientation() / size);
+                                i.m_positionX += j->getX() / size;
+                                i.m_positionY += j->getY() / size;
+                                i.m_positionZ += j->getZ() / size;
+                                i.NormalizeOrientation(i.m_orientation += j->getO() / size);
                                 return i;
                             }));
     }
@@ -100,13 +100,13 @@ WorldPosition::WorldPosition(std::vector<WorldPosition> list, WorldPositionConst
         set(list[urand(0, size - 1)]);
     else if (conType == WP_CENTROID)
     {
-        set(std::accumulate(list.begin(), list.end(), WorldLocation(list[0].GetMapId(), 0, 0, 0, 0),
+        set(std::accumulate(list.begin(), list.end(), WorldLocation(list[0].getMapId(), 0, 0, 0, 0),
                             [size](WorldLocation i, WorldPosition& j)
                             {
-                                i.m_positionX += j.GetPositionX() / size;
-                                i.m_positionY += j.GetPositionY() / size;
-                                i.m_positionZ += j.GetPositionZ() / size;
-                                i.NormalizeOrientation(i.m_orientation += j.GetOrientation() / size);
+                                i.m_positionX += j.getX() / size;
+                                i.m_positionY += j.getY() / size;
+                                i.m_positionZ += j.getZ() / size;
+                                i.NormalizeOrientation(i.m_orientation += j.getO() / size);
                                 return i;
                             }));
     }
@@ -190,6 +190,16 @@ WorldPosition& WorldPosition::operator-=(WorldPosition const& p1)
     return *this;
 }
 
+uint32 WorldPosition::getMapId() { return GetMapId(); }
+
+float WorldPosition::getX() { return GetPositionX(); }
+
+float WorldPosition::getY() { return GetPositionY(); }
+
+float WorldPosition::getZ() { return GetPositionZ(); }
+
+float WorldPosition::getO() { return GetOrientation(); }
+
 bool WorldPosition::isOverworld()
 {
     return GetMapId() == 0 || GetMapId() == 1 || GetMapId() == 530 || GetMapId() == 571;
@@ -233,7 +243,7 @@ float WorldPosition::size()
 
 float WorldPosition::distance(WorldPosition* center)
 {
-    if (GetMapId() == center->GetMapId())
+    if (GetMapId() == center->getMapId())
         return relPoint(center).size();
 
     // this -> mapTransfer | mapTransfer -> center
@@ -242,7 +252,7 @@ float WorldPosition::distance(WorldPosition* center)
 
 float WorldPosition::fDist(WorldPosition* center)
 {
-    if (GetMapId() == center->GetMapId())
+    if (GetMapId() == center->getMapId())
         return sqrt(sqDistance2d(center));
 
     // this -> mapTransfer | mapTransfer -> center
@@ -318,7 +328,7 @@ WorldPosition WorldPosition::firstOutRange(std::vector<WorldPosition> list, floa
 // Returns true if (on the x-y plane) the position is inside the three points.
 bool WorldPosition::isInside(WorldPosition* p1, WorldPosition* p2, WorldPosition* p3)
 {
-    if (GetMapId() != p1->GetMapId() != p2->GetMapId() != p3->GetMapId())
+    if (getMapId() != p1->getMapId() != p2->getMapId() != p3->getMapId())
         return false;
 
     float d1, d2, d3;
@@ -338,7 +348,7 @@ MapEntry const* WorldPosition::getMapEntry() { return sMapStore.LookupEntry(GetM
 
 uint32 WorldPosition::getInstanceId()
 {
-    if (Map* map = sMapMgr->FindBaseMap(GetMapId()))
+    if (Map* map = sMapMgr->FindBaseMap(getMapId()))
         return map->GetInstanceId();
 
     return 0;
@@ -351,7 +361,7 @@ Map* WorldPosition::getMap()
 
 float WorldPosition::getHeight()  // remove const - whipowill
 {
-    return getMap()->GetHeight(GetPositionX(), GetPositionY(), GetPositionZ());
+    return getMap()->GetHeight(getX(), getY(), getZ());
 }
 
 G3D::Vector3 WorldPosition::getVector3() { return G3D::Vector3(GetPositionX(), GetPositionY(), GetPositionZ()); }
@@ -371,11 +381,11 @@ std::string const WorldPosition::print()
 std::string const WorldPosition::to_string()
 {
     std::stringstream out;
-    out << GetMapId() << '|';
-    out << GetPositionX() << '|';
-    out << GetPositionY() << '|';
-    out << GetPositionZ() << '|';
-    out << GetOrientation();
+    out << m_mapId << '|';
+    out << m_positionX << '|';
+    out << m_positionY << '|';
+    out << m_positionZ << '|';
+    out << m_orientation;
     return out.str();
 }
 
@@ -419,14 +429,11 @@ void WorldPosition::printWKT(std::vector<WorldPosition> points, std::ostringstre
 
 WorldPosition WorldPosition::getDisplayLocation()
 {
-    WorldPosition pos = TravelNodeMap::instance().getMapOffset(GetMapId());
+    WorldPosition pos = TravelNodeMap::instance().getMapOffset(getMapId());
     return offset(const_cast<WorldPosition*>(&pos));
 }
 
-uint16 WorldPosition::getAreaId()
-{
-    return sMapMgr->GetAreaId(PHASEMASK_NORMAL, GetMapId(), GetPositionX(), GetPositionY(), GetPositionZ());
-}
+uint16 WorldPosition::getAreaId() { return sMapMgr->GetAreaId(PHASEMASK_NORMAL, getMapId(), getX(), getY(), getZ()); }
 
 AreaTableEntry const* WorldPosition::getArea()
 {
@@ -441,7 +448,7 @@ std::string const WorldPosition::getAreaName(bool fullName, bool zoneName)
 {
     if (!isOverworld())
     {
-        MapEntry const* map = sMapStore.LookupEntry(GetMapId());
+        MapEntry const* map = sMapStore.LookupEntry(getMapId());
         if (map)
             return map->name[0];
     }
@@ -473,7 +480,7 @@ std::string const WorldPosition::getAreaName(bool fullName, bool zoneName)
         }
     }
 
-    return areaName;
+    return std::move(areaName);
 }
 
 std::set<Transport*> WorldPosition::getTransports(uint32 entry)
@@ -538,7 +545,7 @@ std::vector<WorldPosition> WorldPosition::fromGridCoord(GridCoord gridCoord)
         if (d == 2 || d == 3)
             g.inc_y(1);
 
-        retVec.push_back(WorldPosition(GetMapId(), g));
+        retVec.push_back(WorldPosition(getMapId(), g));
     }
 
     return retVec;
@@ -559,7 +566,7 @@ std::vector<WorldPosition> WorldPosition::fromCellCoord(CellCoord cellcoord)
         if (d == 2 || d == 3)
             p.inc_y(1);
 
-        retVec.push_back(WorldPosition(GetMapId(), p));
+        retVec.push_back(WorldPosition(getMapId(), p));
     }
     return retVec;
 }
@@ -611,7 +618,7 @@ std::vector<WorldPosition> WorldPosition::frommGridCoord(mGridCoord GridCoord)
         if (d == 2 || d == 3)
             g.first++;
 
-        retVec.push_back(WorldPosition(GetMapId(), g));
+        retVec.push_back(WorldPosition(getMapId(), g));
     }
 
     return retVec;
@@ -699,7 +706,7 @@ void WorldPosition::loadMapAndVMaps(WorldPosition secondPos)
 {
     for (auto& grid : getmGridCoords(secondPos))
     {
-        loadMapAndVMap(GetMapId(), grid.first, grid.second);
+        loadMapAndVMap(getMapId(), grid.first, grid.second);
     }
 }
 
@@ -707,7 +714,7 @@ std::vector<WorldPosition> WorldPosition::fromPointsArray(std::vector<G3D::Vecto
 {
     std::vector<WorldPosition> retVec;
     for (auto p : path)
-        retVec.push_back(WorldPosition(GetMapId(), p.x, p.y, p.z, GetOrientation()));
+        retVec.push_back(WorldPosition(getMapId(), p.x, p.y, p.z, getO()));
 
     return retVec;
 }
@@ -722,7 +729,7 @@ std::vector<WorldPosition> WorldPosition::getPathStepFrom(WorldPosition startPos
     loadMapAndVMaps(startPos);
 
     PathGenerator path(bot);
-    path.CalculatePath(startPos.GetPositionX(), startPos.GetPositionY(), startPos.GetPositionZ());
+    path.CalculatePath(startPos.getX(), startPos.getY(), startPos.getZ());
 
     Movement::PointsArray points = path.GetPath();
     PathType type = path.GetPathType();
@@ -778,7 +785,7 @@ std::vector<WorldPosition> WorldPosition::getPathFromPath(std::vector<WorldPosit
     WorldPosition currentPos = startPath.back();
 
     // No pathfinding across maps.
-    if (GetMapId() != currentPos.GetMapId())
+    if (getMapId() != currentPos.getMapId())
         return {};
 
     std::vector<WorldPosition> subPath, fullPath = startPath;
@@ -811,18 +818,10 @@ bool WorldPosition::GetReachableRandomPointOnGround(Player* bot, float radius, b
 {
     radius *= randomRange ? rand_norm() : 1.f;
     float angle = rand_norm() * static_cast<float>(2 * M_PI);
-    setX(GetPositionX() + radius * cosf(angle));
-    setY(GetPositionY() + radius * sinf(angle));
+    m_positionX += radius * cosf(angle);
+    m_positionY += radius * sinf(angle);
 
-    float x = GetPositionX();
-    float y = GetPositionY();
-    float z = GetPositionZ();
-    bool canReach = getMap()->CanReachPositionAndGetValidCoords(bot, x, y, z);
-    setX(x);
-    setY(y);
-    setZ(z);
-
-    return canReach;
+    return getMap()->CanReachPositionAndGetValidCoords(bot, m_positionX, m_positionY, m_positionZ);
 }
 
 uint32 WorldPosition::getUnitsAggro(GuidVector& units, Player* bot)
@@ -845,7 +844,7 @@ uint32 WorldPosition::getUnitsAggro(GuidVector& units, Player* bot)
 void FindPointCreatureData::operator()(CreatureData const& creatureData)
 {
     if (!entry || creatureData.id1 == entry)
-        if ((!point || creatureData.mapid == point.GetMapId()) &&
+        if ((!point || creatureData.mapid == point.getMapId()) &&
             (!radius || point.sqDistance(WorldPosition(creatureData.mapid, creatureData.posX, creatureData.posY,
                                                        creatureData.posZ)) < radius * radius))
         {
@@ -856,7 +855,7 @@ void FindPointCreatureData::operator()(CreatureData const& creatureData)
 void FindPointGameObjectData::operator()(GameObjectData const& gameobjectData)
 {
     if (!entry || gameobjectData.id == entry)
-        if ((!point || gameobjectData.mapid == point.GetMapId()) &&
+        if ((!point || gameobjectData.mapid == point.getMapId()) &&
             (!radius || point.sqDistance(WorldPosition(gameobjectData.mapid, gameobjectData.posX, gameobjectData.posY,
                                                        gameobjectData.posZ)) < radius * radius))
         {
@@ -1246,8 +1245,9 @@ bool RpgTravelDestination::isActive(Player* bot)
     for (ObjectGuid const guid : ignoreList)
     {
         if (guid.GetEntry() == getEntry())
+        {
             return false;
-
+        }
     }
 
     FactionTemplateEntry const* factionEntry = sFactionTemplateStore.LookupEntry(cInfo->faction);
@@ -3223,8 +3223,7 @@ void TravelMgr::LoadQuestTravelTable()
             if (loc.second.empty())
                 continue;
 
-            if (!TravelNodeMap::instance().getMapOffset(loc.second.front().GetMapId()) &&
-                loc.second.front().GetMapId() != 0)
+            if (!TravelNodeMap::instance().getMapOffset(loc.second.front().getMapId()) && loc.second.front().getMapId() != 0)
                 continue;
 
             std::vector<WorldPosition> points = loc.second;
@@ -3236,7 +3235,7 @@ void TravelMgr::LoadQuestTravelTable()
 
             out << "\"center\""
                 << ",";
-            out << points.begin()->GetMapId() << ",";
+            out << points.begin()->getMapId() << ",";
             out << points.begin()->getAreaName() << ",";
             out << points.begin()->getAreaName(true, true) << ",";
 
@@ -3246,7 +3245,7 @@ void TravelMgr::LoadQuestTravelTable()
 
             out << "\"area\""
                 << ",";
-            out << points.begin()->GetMapId() << ",";
+            out << points.begin()->getMapId() << ",";
             out << points.begin()->getAreaName() << ",";
             out << points.begin()->getAreaName(true, true) << ",";
 
@@ -3614,18 +3613,17 @@ void TravelMgr::LoadQuestTravelTable()
                 if (!pos->getMap())
                     continue;
 
-                float nx = pos->GetPositionX() + (x * 5) - 5000.0f;
-                float ny = pos->GetPositionY() + (y * 5) - 5000.0f;
-                float nz = pos->GetPositionZ() + 100.0f;
+                float nx = pos->getX() + (x*5)-5000.0f;
+                float ny = pos->getY() + (y*5)-5000.0f;
+                float nz = pos->getZ() + 100.0f;
 
                 //pos->getMap()->GetHitPosition(nx, ny, nz + 200.0f, nx, ny, nz, -0.5f);
 
                 if (!pos->getMap()->GetHeightInRange(nx, ny, nz, 5000.0f)) // GetHeight can fail
                     continue;
 
-                WorldPosition npos = WorldPosition(pos->GetMapId(), nx, ny, nz, 0.0);
-                uint32 area = path.getArea(npos.GetMapId(), npos.GetPositionX(), npos.GetPositionY(),
-                                           npos.GetPositionZ());
+                WorldPosition  npos = WorldPosition(pos->getMapId(), nx, ny, nz, 0.0);
+                uint32 area = path.getArea(npos.getMapId(), npos.getX(), npos.getY(), npos.getZ());
 
                 std::ostringstream out;
                 out << std::fixed << area << "," << npos.getDisplayX() << "," << npos.getDisplayY();
@@ -3649,8 +3647,7 @@ void TravelMgr::LoadQuestTravelTable()
             std::string const name = i.second->getTitle();
             name.erase(remove(name.begin(), name.end(), '\"'), name.end());
             out << std::fixed << std::setprecision(2) << name.c_str() << "," << i.first << "," << j->getDisplayX() <<
-    "," << j->getDisplayY() << "," << j->GetPositionX() << "," << j->GetPositionY() << "," << j->GetPositionZ();
-    sPlayerbotAIConfig.log(5,
+    "," << j->getDisplayY() << "," << j->getX() << "," << j->getY() << "," << j->getZ(); sPlayerbotAIConfig.log(5,
     out.str().c_str());
         }
     }
@@ -4025,7 +4022,7 @@ std::vector<TravelDestination*> TravelMgr::getRpgTravelDestinations(Player* bot,
         retTravelLocations.push_back(dest);
     }
 
-    return retTravelLocations;
+    return std::move(retTravelLocations);
 }
 
 std::vector<TravelDestination*> TravelMgr::getExploreTravelDestinations(Player* bot, bool ignoreFull,
@@ -4090,8 +4087,8 @@ void TravelMgr::setNullTravelTarget(Player* player)
 
 void TravelMgr::addMapTransfer(WorldPosition start, WorldPosition end, float portalDistance, bool makeShortcuts)
 {
-    uint32 sMap = start.GetMapId();
-    uint32 eMap = end.GetMapId();
+    uint32 sMap = start.getMapId();
+    uint32 eMap = end.getMapId();
 
     if (sMap == eMap)
         return;
@@ -4124,7 +4121,7 @@ void TravelMgr::addMapTransfer(WorldPosition start, WorldPosition end, float por
     }
 
     // Add actual transfer.
-    auto mapTransfers = mapTransfersMap.find(std::make_pair(start.GetMapId(), end.GetMapId()));
+    auto mapTransfers = mapTransfersMap.find(std::make_pair(start.getMapId(), end.getMapId()));
 
     if (mapTransfers == mapTransfersMap.end())
         mapTransfersMap.insert({{sMap, eMap}, {mapTransfer(start, end, portalDistance)}});
@@ -4145,8 +4142,8 @@ void TravelMgr::loadMapTransfers()
 
 float TravelMgr::mapTransDistance(WorldPosition start, WorldPosition end)
 {
-    uint32 sMap = start.GetMapId();
-    uint32 eMap = end.GetMapId();
+    uint32 sMap = start.getMapId();
+    uint32 eMap = end.getMapId();
 
     if (sMap == eMap)
         return start.distance(end);
@@ -4170,8 +4167,8 @@ float TravelMgr::mapTransDistance(WorldPosition start, WorldPosition end)
 
 float TravelMgr::fastMapTransDistance(WorldPosition start, WorldPosition end)
 {
-    uint32 sMap = start.GetMapId();
-    uint32 eMap = end.GetMapId();
+    uint32 sMap = start.getMapId();
+    uint32 eMap = end.getMapId();
 
     if (sMap == eMap)
         return start.fDist(end);

@@ -7,9 +7,9 @@
 
 #include "ChatHelper.h"
 #include "Event.h"
-#include "PlayerbotAI.h"
+#include "Playerbots.h"
 
-bool StatsAction::Execute(Event /*event*/)
+bool StatsAction::Execute(Event event)
 {
     std::ostringstream out;
 

@@ -6,9 +6,7 @@
 #include "Talentspec.h"
 
 #include "Event.h"
-#include "Player.h"
-#include "SpellMgr.h"
-#include "World.h"
+#include "Playerbots.h"
 
 uint32 TalentSpec::TalentListEntry::tabPage() const
 {
@@ -319,7 +317,7 @@ std::vector<TalentSpec::TalentListEntry> TalentSpec::GetTalentTree(uint32 tabpag
         if (entry.tabPage() == tabpage)
             retList.push_back(entry);
 
-    return retList;
+    return std::move(retList);
 }
 
 uint32 TalentSpec::GetTalentPoints(int32 tabpage) { return GetTalentPoints(talents, tabpage); };
@@ -370,7 +368,7 @@ std::string const TalentSpec::GetTalentLink()
     if (treeLink[2] != "0")
         link = link + "-" + treeLink[2];
 
-    return link;
+    return std::move(link);
 }
 
 uint32 TalentSpec::highestTree()

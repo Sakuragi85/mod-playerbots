@@ -364,12 +364,12 @@ ItemIds EquipAction::SelectInventoryItemsToEquip()
     return items;
 }
 
-bool EquipUpgradesPacketAction::Execute(Event event)
+bool EquipUpgradesTriggeredAction::Execute(Event event)
 {
     if (!sPlayerbotAIConfig.autoEquipUpgradeLoot && !sRandomPlayerbotMgr.IsRandomBot(bot))
         return false;
-    std::string const source = event.GetSource();
-    if (source == "trade status")
+
+    if (event.GetSource() == "trade status")
     {
         WorldPacket p(event.getPacket());
         p.rpos(0);
@@ -380,7 +380,7 @@ bool EquipUpgradesPacketAction::Execute(Event event)
             return false;
     }
 
-    else if (source == "item push result")
+    if (event.GetSource() == "item push result")
     {
         WorldPacket p(event.getPacket());
         p.rpos(0);
@@ -406,7 +406,7 @@ bool EquipUpgradesPacketAction::Execute(Event event)
     return true;
 }
 
-bool EquipUpgradeAction::Execute(Event /*event*/)
+bool EquipUpgradeAction::Execute(Event event)
 {
     ItemIds items = SelectInventoryItemsToEquip();
     EquipItems(items);

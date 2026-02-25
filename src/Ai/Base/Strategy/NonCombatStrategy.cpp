@@ -5,6 +5,8 @@
 
 #include "NonCombatStrategy.h"
 
+#include "Playerbots.h"
+
 void NonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode("random", { NextAction("clean quest log", 1.0f) }));
@@ -56,7 +58,7 @@ void MasterFishingStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             "random",
             {
                 NextAction("end master fishing", 12.0f),
-                NextAction("equip upgrades packet action", 6.0f)
+                NextAction("equip upgrades", 6.0f)
             }
         )
     );

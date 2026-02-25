@@ -7,6 +7,7 @@
 
 #include <random>
 
+#include "BattlegroundMgr.h"
 #include "ChatHelper.h"
 #include "EmoteAction.h"
 #include "Event.h"
@@ -15,7 +16,7 @@
 #include "ServerFacade.h"
 #include "RpgSubActions.h"
 
-bool RpgAction::Execute(Event /*event*/)
+bool RpgAction::Execute(Event event)
 {
     GuidPosition guidP = AI_VALUE(GuidPosition, "rpg target");
     if (!guidP && botAI->GetMaster())
@@ -84,7 +85,7 @@ bool RpgAction::SetNextRpgAction()
                     isChecked = true;
 
                     Action* action = botAI->GetAiObjectContext()->GetAction(nextAction.getName());
-                    if (!dynamic_cast<RpgEnabled*>(action) || !action->isUseful() || !action->isPossible())
+                    if (!dynamic_cast<RpgEnabled*>(action) || !action->isPossible() || !action->isUseful())
                         continue;
 
                     actions.push_back(action);

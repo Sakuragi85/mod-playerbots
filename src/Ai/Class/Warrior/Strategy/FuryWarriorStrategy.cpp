@@ -5,6 +5,8 @@
 
 #include "FuryWarriorStrategy.h"
 
+#include "Playerbots.h"
+
 class FuryWarriorStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
 public:

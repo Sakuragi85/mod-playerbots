@@ -7,9 +7,9 @@
 
 #include "ChatHelper.h"
 #include "Event.h"
-#include "ItemPackets.h"
 #include "ItemUsageValue.h"
 #include "Playerbots.h"
+#include "ItemPackets.h"
 
 bool UseItemAction::Execute(Event event)
 {
@@ -416,7 +416,14 @@ bool UseHearthStone::Execute(Event event)
 
 bool UseHearthStone::isUseful() { return !bot->InBattleground(); }
 
-bool UseRandomRecipe::Execute(Event /*event*/)
+bool UseRandomRecipe::isUseful()
+{
+    return !bot->IsInCombat() && !botAI->HasActivePlayerMaster() && !bot->InBattleground();
+}
+
+bool UseRandomRecipe::isPossible() { return AI_VALUE2(uint32, "item count", "recipe") > 0; }
+
+bool UseRandomRecipe::Execute(Event event)
 {
     std::vector<Item*> recipes = AI_VALUE2(std::vector<Item*>, "inventory items", "recipe");
 
@@ -438,14 +445,14 @@ bool UseRandomRecipe::Execute(Event /*event*/)
     return used;
 }
 
-bool UseRandomRecipe::isUseful()
+bool UseRandomQuestItem::isUseful()
 {
-    return !bot->IsInCombat() && !botAI->HasActivePlayerMaster() && !bot->InBattleground();
+    return !botAI->HasActivePlayerMaster() && !bot->InBattleground() && !bot->HasUnitState(UNIT_STATE_IN_FLIGHT);
 }
 
-bool UseRandomRecipe::isPossible() { return AI_VALUE2(uint32, "item count", "recipe") > 0; }
+bool UseRandomQuestItem::isPossible() { return AI_VALUE2(uint32, "item count", "quest") > 0; }
 
-bool UseRandomQuestItem::Execute(Event /*event*/)
+bool UseRandomQuestItem::Execute(Event event)
 {
     Unit* unitTarget = nullptr;
     ObjectGuid goTarget;
@@ -471,6 +478,7 @@ bool UseRandomQuestItem::Execute(Event /*event*/)
                 break;
             }
         }
+
     }
 
     if (!item)
@@ -482,10 +490,3 @@ bool UseRandomQuestItem::Execute(Event /*event*/)
 
     return used;
 }
-
-bool UseRandomQuestItem::isUseful()
-{
-    return !botAI->HasActivePlayerMaster() && !bot->InBattleground() && !bot->HasUnitState(UNIT_STATE_IN_FLIGHT);
-}
-
-bool UseRandomQuestItem::isPossible() { return AI_VALUE2(uint32, "item count", "quest") > 0; }

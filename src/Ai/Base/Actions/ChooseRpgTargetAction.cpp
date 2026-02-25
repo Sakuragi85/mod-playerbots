@@ -6,6 +6,7 @@
 #include <random>
 
 #include "ChooseRpgTargetAction.h"
+#include "BattlegroundMgr.h"
 #include "BudgetValues.h"
 #include "ChatHelper.h"
 #include "Event.h"
@@ -13,6 +14,7 @@
 #include "GuildCreateActions.h"
 #include "Playerbots.h"
 #include "RpgSubActions.h"
+#include "Util.h"
 #include "ServerFacade.h"
 #include "PossibleRpgTargetsValue.h"
 
@@ -110,7 +112,7 @@ float ChooseRpgTargetAction::getMaxRelevance(GuidPosition guidP)
     return floor((maxRelevance - 1.0) * 1000.0f);
 }
 
-bool ChooseRpgTargetAction::Execute(Event /*event*/)
+bool ChooseRpgTargetAction::Execute(Event event)
 {
     //TravelTarget* travelTarget = AI_VALUE(TravelTarget*, "travel target"); //not used, line marked for removal.
     Player* master = botAI->GetMaster();
@@ -318,7 +320,7 @@ bool ChooseRpgTargetAction::isFollowValid(Player* bot, WorldPosition pos)
             inDungeon = true;
 
         if (realMaster && realMaster->IsInWorld() && realMaster->GetMap()->IsDungeon() &&
-            (realMaster->GetMapId() != pos.GetMapId()))
+            (realMaster->GetMapId() != pos.getMapId()))
             return false;
     }
 
@@ -332,7 +334,7 @@ bool ChooseRpgTargetAction::isFollowValid(Player* bot, WorldPosition pos)
         return false;
 
     Formation* formation = AI_VALUE(Formation*, "formation");
-    float distance = groupLeader->GetDistance2d(pos.GetPositionX(), pos.GetPositionY());
+    float distance = groupLeader->GetDistance2d(pos.getX(), pos.getY());
 
     if (!botAI->HasActivePlayerMaster() && distance < 50.0f)
     {

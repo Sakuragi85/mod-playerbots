@@ -175,7 +175,7 @@ bool BuyAction::Execute(Event event)
 
                     if (needMoneyFor == NeedMoneyFor::gear)
                     {
-                        botAI->DoSpecificAction("equip upgrades packet action");
+                        botAI->DoSpecificAction("equip upgrades");
                     }
                 }
             }
@@ -206,7 +206,7 @@ bool BuyAction::Execute(Event event)
                 if (usage == ITEM_USAGE_REPLACE || usage == ITEM_USAGE_EQUIP ||
                     usage == ITEM_USAGE_BAD_EQUIP || usage == ITEM_USAGE_BROKEN_EQUIP)
                 {
-                    botAI->DoSpecificAction("equip upgrades packet action");
+                    botAI->DoSpecificAction("equip upgrades");
                     break;
                 }
             }

@@ -5,13 +5,14 @@
 
 #include "ResetInstancesAction.h"
 
-#include "PlayerbotAI.h"
+#include "Playerbots.h"
 
-bool ResetInstancesAction::Execute(Event /*event*/)
+bool ResetInstancesAction::Execute(Event event)
 {
     WorldPacket packet(CMSG_RESET_INSTANCES, 0);
     bot->GetSession()->HandleResetInstancesOpcode(packet);
 
+    botAI->TellMaster("Resetting all instances");
     return true;
 }
 

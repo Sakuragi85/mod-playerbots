@@ -4,6 +4,7 @@
  */
 
 #include "TankWarlockStrategy.h"
+#include "Playerbots.h"
 
 // Combat strategy for a Warlock Tank, for certain bosses like Twin Emperors
 // Priority is set to spam Searing Pain and use Shadow Ward on CD

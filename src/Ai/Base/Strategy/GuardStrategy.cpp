@@ -5,6 +5,8 @@
 
 #include "GuardStrategy.h"
 
+#include "Playerbots.h"
+
 std::vector<NextAction> GuardStrategy::getDefaultActions()
 {
     return {

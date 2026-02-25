@@ -8,13 +8,15 @@
 #include "Event.h"
 #include "Playerbots.h"
 
-bool CastRemoveShadowformAction::Execute(Event /*event*/)
+bool CastRemoveShadowformAction::isUseful() { return botAI->HasAura("shadowform", AI_VALUE(Unit*, "self target")); }
+
+bool CastRemoveShadowformAction::isPossible() { return true; }
+
+bool CastRemoveShadowformAction::Execute(Event event)
 {
     botAI->RemoveAura("shadowform");
     return true;
 }
-
-bool CastRemoveShadowformAction::isUseful() { return botAI->HasAura("shadowform", AI_VALUE(Unit*, "self target")); }
 
 Unit* CastPowerWordShieldOnAlmostFullHealthBelowAction::GetTarget()
 {

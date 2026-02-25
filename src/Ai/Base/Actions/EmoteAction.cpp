@@ -6,6 +6,7 @@
 #include "EmoteAction.h"
 
 #include "Event.h"
+#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
 
@@ -786,7 +787,7 @@ bool EmoteAction::isUseful()
     return time(nullptr) >= lastEmote;
 }
 
-bool TalkAction::Execute(Event /*event*/)
+bool TalkAction::Execute(Event event)
 {
     Unit* target = botAI->GetUnit(AI_VALUE(ObjectGuid, "talk target"));
     if (!target)

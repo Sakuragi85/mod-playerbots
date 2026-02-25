@@ -4,7 +4,10 @@
  */
 
 #include "PlayerbotRepository.h"
-#include "AiObjectContext.h"
+
+#include <iostream>
+
+#include "Playerbots.h"
 
 void PlayerbotRepository::Load(PlayerbotAI* botAI)
 {

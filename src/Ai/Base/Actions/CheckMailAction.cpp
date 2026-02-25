@@ -7,10 +7,9 @@
 
 #include "Event.h"
 #include "GuildTaskMgr.h"
-#include "PlayerbotAIConfig.h"
-#include "PlayerbotAI.h"
+#include "Playerbots.h"
 
-bool CheckMailAction::Execute(Event /*event*/)
+bool CheckMailAction::Execute(Event event)
 {
     WorldPacket p;
     bot->GetSession()->HandleQueryNextMailTime(p);
@@ -29,7 +28,7 @@ bool CheckMailAction::Execute(Event /*event*/)
             continue;
 
         uint32 account = owner->GetSession()->GetAccountId();
-        if (PlayerbotAIConfig::instance().IsInRandomAccountList(account))
+        if (sPlayerbotAIConfig.IsInRandomAccountList(account))
             continue;
 
         ProcessMail(mail, owner, trans);

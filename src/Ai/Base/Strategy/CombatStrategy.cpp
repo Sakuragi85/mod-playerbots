@@ -5,6 +5,7 @@
 
 #include "CombatStrategy.h"
 
+#include "Playerbots.h"
 #include "Strategy.h"
 
 void CombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

@@ -5,6 +5,7 @@
 
 #include "PlayerbotFactory.h"
 
+#include <random>
 #include <utility>
 
 #include "AccountMgr.h"
@@ -19,7 +20,9 @@
 #include "ItemTemplate.h"
 #include "ItemVisitors.h"
 #include "Log.h"
+#include "LogCommon.h"
 #include "LootMgr.h"
+#include "MapMgr.h"
 #include "ObjectMgr.h"
 #include "PerfMonitor.h"
 #include "PetDefines.h"
@@ -34,6 +37,7 @@
 #include "RandomPlayerbotFactory.h"
 #include "ReputationMgr.h"
 #include "SharedDefines.h"
+#include "SpellAuraDefines.h"
 #include "StatsWeightCalculator.h"
 #include "World.h"
 #include "AiObjectContext.h"
@@ -237,17 +241,19 @@ void PlayerbotFactory::Randomize(bool incremental)
     Prepare();
     LOG_DEBUG("playerbots", "Resetting player...");
     PerfMonitorOperation* pmo = sPerfMonitor.start(PERF_MON_RNDBOT, "PlayerbotFactory_Reset");
-
-    if (!PlayerbotAIConfig::instance().equipmentPersistence || level < PlayerbotAIConfig::instance().equipmentPersistenceLevel)
+    if (!sPlayerbotAIConfig.equipmentPersistence || level < sPlayerbotAIConfig.equipmentPersistenceLevel)
+    {
         bot->resetTalents(true);
-
+    }
     if (!incremental)
     {
         ClearSkills();
         ClearSpells();
         ResetQuests();
-        if (!PlayerbotAIConfig::instance().equipmentPersistence || level < PlayerbotAIConfig::instance().equipmentPersistenceLevel)
+        if (!sPlayerbotAIConfig.equipmentPersistence || level < sPlayerbotAIConfig.equipmentPersistenceLevel)
+        {
             ClearAllItems();
+        }
     }
     ClearInventory();
     bot->RemoveAllSpellCooldown();
@@ -1781,8 +1787,9 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
 
         int32 desiredQuality = itemQuality;
         if (urand(0, 100) < 100 * sPlayerbotAIConfig.randomGearLoweringChance && desiredQuality > ITEM_QUALITY_NORMAL)
+        {
             desiredQuality--;
-
+        }
         do
         {
             for (uint32 requiredLevel = bot->GetLevel(); requiredLevel > std::max((int32)bot->GetLevel() - delta, 0);
@@ -1966,12 +1973,14 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
             }
 
             if (bestItemForSlot == 0)
+            {
                 continue;
-
+            }
             uint16 dest;
             if (!CanEquipUnseenItem(slot, dest, bestItemForSlot))
+            {
                 continue;
-
+            }
             Item* newItem = bot->EquipNewItem(dest, bestItemForSlot, true);
             bot->AutoUnequipOffhandIfNeed();
             // if (newItem)
@@ -2134,18 +2143,21 @@ void PlayerbotFactory::InitBags(bool destroyOld)
         uint32 newItemId = 51809;
         Item* old_bag = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
         if (old_bag && old_bag->GetTemplate()->ItemId == newItemId)
+        {
             continue;
-
+        }
         uint16 dest;
         if (!CanEquipUnseenItem(slot, dest, newItemId))
             continue;
 
         if (old_bag && destroyOld)
+        {
             bot->DestroyItem(INVENTORY_SLOT_BAG_0, slot, true);
-
+        }
         if (old_bag)
+        {
             continue;
-
+        }
         Item* newItem = bot->EquipNewItem(dest, newItemId, true);
         // if (newItem)
         // {

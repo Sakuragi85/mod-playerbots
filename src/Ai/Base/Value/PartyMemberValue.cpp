@@ -6,11 +6,8 @@
 #include "PartyMemberValue.h"
 #include "Corpse.h"
 
-#include "Group.h"
-#include "PlayerbotAI.h"
+#include "Playerbots.h"
 #include "ServerFacade.h"
-#include "Pet.h"
-#include "Spell.h"
 
 Unit* PartyMemberValue::FindPartyMember(std::vector<Player*>* party, FindPlayerPredicate& predicate)
 {

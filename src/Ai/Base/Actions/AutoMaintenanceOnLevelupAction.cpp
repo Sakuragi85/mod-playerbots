@@ -1,20 +1,19 @@
 #include "AutoMaintenanceOnLevelupAction.h"
 
-#include "SpellMgr.h"
-
+#include "GuildMgr.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotFactory.h"
+#include "Playerbots.h"
 #include "RandomPlayerbotMgr.h"
 #include "SharedDefines.h"
 #include "BroadcastHelper.h"
 
-bool AutoMaintenanceOnLevelupAction::Execute(Event /*event*/)
+bool AutoMaintenanceOnLevelupAction::Execute(Event event)
 {
     AutoPickTalents();
     AutoLearnSpell();
     AutoUpgradeEquip();
     AutoTeleportForLevel();
-
     return true;
 }
 

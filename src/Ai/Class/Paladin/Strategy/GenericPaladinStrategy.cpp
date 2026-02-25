@@ -6,6 +6,7 @@
 #include "GenericPaladinStrategy.h"
 
 #include "GenericPaladinStrategyActionNodeFactory.h"
+#include "Playerbots.h"
 
 GenericPaladinStrategy::GenericPaladinStrategy(PlayerbotAI* botAI) : CombatStrategy(botAI)
 {

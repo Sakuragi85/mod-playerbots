@@ -71,7 +71,9 @@ public:
         }
 
         if (revision.empty())
+        {
             revision = "Unknown Playerbots Database Revision";
+        }
     }
 };
 
@@ -215,12 +217,16 @@ public:
             Player* const member = itr->GetSource();
 
             if (member == nullptr)
+            {
                 continue;
+            }
 
             PlayerbotAI* const botAI = PlayerbotsMgr::instance().GetPlayerbotAI(member);
 
             if (botAI == nullptr)
+            {
                 continue;
+            }
 
             botAI->HandleCommand(type, msg, player);
         }
@@ -231,22 +237,30 @@ public:
     bool OnPlayerCanUseChat(Player* player, uint32 type, uint32 /*lang*/, std::string& msg, Guild* guild) override
     {
         if (type != CHAT_MSG_GUILD)
+        {
             return true;
+        }
 
         PlayerbotMgr* playerbotMgr = PlayerbotsMgr::instance().GetPlayerbotMgr(player);
 
         if (playerbotMgr == nullptr)
+        {
             return true;
+        }
 
         for (PlayerBotMap::const_iterator it = playerbotMgr->GetPlayerBotsBegin(); it != playerbotMgr->GetPlayerBotsEnd(); ++it)
         {
             Player* const bot = it->second;
 
             if (bot == nullptr)
+            {
                 continue;
+            }
 
             if (bot->GetGuildId() != player->GetGuildId())
+            {
                 continue;
+            }
 
             PlayerbotsMgr::instance().GetPlayerbotAI(bot)->HandleCommand(type, msg, player);
         }
@@ -259,7 +273,9 @@ public:
         PlayerbotMgr* const playerbotMgr = PlayerbotsMgr::instance().GetPlayerbotMgr(player);
 
         if (playerbotMgr != nullptr && channel->GetFlags() & 0x18)
+        {
             playerbotMgr->HandleCommand(type, msg);
+        }
 
         sRandomPlayerbotMgr.HandleCommand(type, msg, player);
 
@@ -294,10 +310,14 @@ public:
             {
                 Player* member = gref->GetSource();
                 if (!member)
+                {
                     continue;
+                }
 
                 if (!member->GetSession()->IsBot())
+                {
                     return;
+                }
             }
         }
 
@@ -316,10 +336,14 @@ public:
         PlayerbotAI* botAI = PlayerbotsMgr::instance().GetPlayerbotAI(player);
 
         if (botAI != nullptr)
+        {
             delete botAI;
+        }
 
         if (PlayerbotMgr* playerbotMgr = GET_PLAYERBOT_MGR(player))
+        {
             delete playerbotMgr;
+        }
     }
 };
 
@@ -417,10 +441,14 @@ public:
     void OnPlayerbotCheckPetitionAccount(Player* player, bool& found) override
     {
         if (!found)
+        {
             return;
+        }
 
         if (PlayerbotsMgr::instance().GetPlayerbotAI(player) != nullptr)
+        {
             found = false;
+        }
     }
 
     bool OnPlayerbotCheckUpdatesToSend(Player* player) override
@@ -428,7 +456,9 @@ public:
         PlayerbotAI* botAI = PlayerbotsMgr::instance().GetPlayerbotAI(player);
 
         if (botAI == nullptr)
+        {
             return true;
+        }
 
         return botAI->IsRealPlayer();
     }
@@ -436,15 +466,21 @@ public:
     void OnPlayerbotPacketSent(Player* player, WorldPacket const* packet) override
     {
         if (player == nullptr)
+        {
             return;
+        }
 
         PlayerbotAI* botAI = PlayerbotsMgr::instance().GetPlayerbotAI(player);
 
         if (botAI != nullptr)
+        {
             botAI->HandleBotOutgoingPacket(*packet);
+        }
 
         if (PlayerbotMgr* playerbotMgr = GET_PLAYERBOT_MGR(player))
+        {
             playerbotMgr->HandleMasterOutgoingPacket(*packet);
+        }
     }
 
     void OnPlayerbotUpdate(uint32 diff) override

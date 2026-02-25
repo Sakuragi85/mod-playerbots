@@ -5,8 +5,9 @@
 
 #include "Trigger.h"
 
-#include "AiObjectContext.h"
 #include "Event.h"
+#include "Playerbots.h"
+#include "Timer.h"
 
 Trigger::Trigger(PlayerbotAI* botAI, std::string const name, int32 checkInterval)
     : AiNamedObject(botAI, name),

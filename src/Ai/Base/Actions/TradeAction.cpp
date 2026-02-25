@@ -8,7 +8,7 @@
 #include "Event.h"
 #include "ItemCountValue.h"
 #include "ItemVisitors.h"
-#include "PlayerbotAI.h"
+#include "Playerbots.h"
 
 bool TradeAction::Execute(Event event)
 {
@@ -106,7 +106,9 @@ bool TradeAction::TradeItem(Item const* item, int8 slot)
         for (uint8 i = 0; i < TRADE_SLOT_TRADED_COUNT && tradeSlot == -1; i++)
         {
             if (pTrade->GetItem(TradeSlots(i)) == nullptr)
+            {
                 tradeSlot = i;
+            }
         }
     }
 

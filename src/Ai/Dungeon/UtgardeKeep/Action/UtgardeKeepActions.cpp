@@ -1,8 +1,9 @@
 #include "Playerbots.h"
 #include "UtgardeKeepActions.h"
+#include "UtgardeKeepStrategy.h"
 
 bool AttackFrostTombAction::isUseful() { return !botAI->IsHeal(bot); }
-bool AttackFrostTombAction::Execute(Event /*event*/)
+bool AttackFrostTombAction::Execute(Event event)
 {
     Unit* frostTomb = nullptr;
 
@@ -27,7 +28,7 @@ bool AttackFrostTombAction::Execute(Event /*event*/)
 }
 
 // TODO: Possibly add player stacking behaviour close to tank, to prevent Skarvald charging ranged
-bool AttackDalronnAction::Execute(Event /*event*/)
+bool AttackDalronnAction::Execute(Event event)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "dalronn the controller");
     if (!boss) { return false; }
@@ -39,7 +40,7 @@ bool AttackDalronnAction::Execute(Event /*event*/)
     return Attack(boss);
 }
 
-bool IngvarStopCastingAction::Execute(Event /*event*/)
+bool IngvarStopCastingAction::Execute(Event event)
 {
     // Doesn't work, this action gets queued behind the current spell instead of interrupting it
     Unit* boss = AI_VALUE2(Unit*, "find target", "ingvar the plunderer");
@@ -63,7 +64,7 @@ bool IngvarStopCastingAction::Execute(Event /*event*/)
 }
 
 bool IngvarDodgeSmashAction::isUseful() { return !AI_VALUE2(bool, "behind", "current target"); }
-bool IngvarDodgeSmashAction::Execute(Event /*event*/)
+bool IngvarDodgeSmashAction::Execute(Event event)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "ingvar the plunderer");
     if (!boss) { return false; }
@@ -77,7 +78,7 @@ bool IngvarDodgeSmashAction::Execute(Event /*event*/)
 }
 
 bool IngvarSmashReturnAction::isUseful() { return AI_VALUE2(bool, "behind", "current target"); }
-bool IngvarSmashReturnAction::Execute(Event /*event*/)
+bool IngvarSmashReturnAction::Execute(Event event)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "ingvar the plunderer");
     if (!boss) { return false; }

@@ -8,6 +8,7 @@
 #include "CellImpl.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
+#include "Playerbots.h"
 
 class AnyDeadUnitInObjectRangeCheck
 {

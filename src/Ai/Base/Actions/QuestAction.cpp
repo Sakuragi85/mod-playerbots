@@ -5,7 +5,6 @@
 
 #include "QuestAction.h"
 #include <sstream>
-#include <algorithm>
 
 #include "Chat.h"
 #include "ChatHelper.h"
@@ -117,8 +116,7 @@ bool QuestAction::CompleteQuest(Player* player, uint32 entry)
                 player->CastedCreatureOrGO(creature, ObjectGuid(), spell_id);
             }
         }*/
-        /*else*/
-        if (creature > 0)
+        /*else*/ if (creature > 0)
         {
             if (CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(creature))
                 for (uint16 z = 0; z < creaturecount; ++z)
@@ -434,7 +432,7 @@ bool QuestItemPushResultAction::Execute(Event event)
     return false;
 }
 
-bool QuestUpdateFailedAction::Execute(Event /*event*/)
+bool QuestUpdateFailedAction::Execute(Event event)
 {
     //opcode SMSG_QUESTUPDATE_FAILED is never sent...(yet?)
     return false;

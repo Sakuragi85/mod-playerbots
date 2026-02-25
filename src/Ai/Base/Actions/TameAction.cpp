@@ -6,10 +6,12 @@
 #include "TameAction.h"
 #include <algorithm>
 #include <cctype>
+#include <iomanip>
 #include <random>
 #include <set>
 #include <sstream>
 #include "DBCStructure.h"
+#include "Log.h"
 #include "ObjectMgr.h"
 #include "Pet.h"
 #include "Player.h"
