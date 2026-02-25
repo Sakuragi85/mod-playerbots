@@ -8,47 +8,43 @@ namespace TempestKeepHelpers
 {
     // General
 
-    Unit* GetNearestNonTankPlayerInRadius(Player* bot, float radius)
+    Unit* GetNearestNonTankPlayerInRadius(PlayerbotAI* botAI, Player* bot, float radius)
     {
         Unit* nearestPlayer = nullptr;
         float nearestDistance = radius;
 
-        if (Group* group = bot->GetGroup())
+        Group* group = bot->GetGroup();
+        if (!group)
+            return nullptr;
+
+        for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
         {
-            for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || member == bot || botAI->IsTank(member))
+                continue;
+
+            float distance = bot->GetExactDist2d(member);
+            if (distance < nearestDistance)
             {
-                Player* member = ref->GetSource();
-                if (!member || !member->IsAlive() || member == bot)
-                    continue;
-
-                if (PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member))
-                {
-                    if (memberAI->IsTank(member))
-                        continue;
-                }
-
-                float distance = bot->GetExactDist2d(member);
-                if (distance < nearestDistance)
-                {
-                    nearestDistance = distance;
-                    nearestPlayer = member;
-                }
+                nearestDistance = distance;
+                nearestPlayer = member;
             }
         }
 
         return nearestPlayer;
     }
 
-    std::vector<Unit*> GetAllHazardTriggers(
-        PlayerbotAI* botAI, Player* bot, uint32 npcEntry, float maxSearchRadius)
+    std::vector<Unit*> GetAllHazardTriggers(Player* bot, uint32 npcEntry, float searchRadius)
     {
         std::vector<Unit*> hazardTriggers;
-        auto const& npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-        for (auto const& npcGuid : npcs)
+
+        std::list<Creature*> creatureList;
+        bot->GetCreatureListWithEntryInGrid(creatureList, npcEntry, searchRadius);
+
+        for (Creature* creature : creatureList)
         {
-            Unit* unit = botAI->GetUnit(npcGuid);
-            if (unit && unit->GetEntry() == npcEntry && bot->GetExactDist2d(unit) < maxSearchRadius)
-                hazardTriggers.push_back(unit);
+            if (creature && creature->IsAlive())
+                hazardTriggers.push_back(creature);
         }
 
         return hazardTriggers;
@@ -265,13 +261,15 @@ namespace TempestKeepHelpers
         Unit* secondEmber = nullptr;
 
         for (auto const& guid :
-             botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get())
+            botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get())
         {
             Unit* unit = botAI->GetUnit(guid);
             if (unit && unit->IsAlive() && unit->GetEntry() == NPC_EMBER_OF_ALAR)
             {
                 if (!firstEmber)
+                {
                     firstEmber = unit;
+                }
                 else if (!secondEmber)
                 {
                     secondEmber = unit;
@@ -286,7 +284,7 @@ namespace TempestKeepHelpers
     Player* GetSecondEmberTank(PlayerbotAI* botAI)
     {
         Player* mainTank = GetGroupMainTank(botAI, botAI->GetBot());
-        Player* assistTank = GetGroupFirstAssistTank(botAI, botAI->GetBot());
+        Player* assistTank = GetGroupAssistTank(botAI, botAI->GetBot(), 0);
 
         bool mainTankHasMelt = mainTank && mainTank->HasAura(SPELL_MELT_ARMOR);
         bool assistTankHasMelt = assistTank && assistTank->HasAura(SPELL_MELT_ARMOR);
@@ -302,109 +300,100 @@ namespace TempestKeepHelpers
 
     // Void Reaver
 
-    const Position VOID_REAVER_TANK_POSITION = { 423.845f, 371.733f, 14.897f };
+    const Position VOID_REAVER_TANK_POSITION =  { 423.845f, 371.733f, 14.897f };
+
+    std::unordered_map<ObjectGuid, bool> hasReachedVoidReaverPosition;
+    std::unordered_map<uint32, std::vector<ArcaneOrbData>> voidReaverArcaneOrbs;
 
     // Kael'thas Sunstrider <Lord of the Blood Elves>
 
-    const Position SANGUINAR_TANK_POSITION = { 775.478f, 39.888f, 46.780f };
-    const Position SANGUINAR_WAITING_POSITION = { 761.850f, 27.459f, 46.779f };
-    const Position TELONICUS_TANK_POSITION = { 773.717f, 44.091f, 46.780f };
-    const Position TELONICUS_WAITING_POSITION = { 754.347f, 31.739f, 46.796f };
-    const Position ADVISOR_HEAL_POSITION = { 752.171f, 19.494f, 46.779f };
+    const Position SANGUINAR_TANK_POSITION =    { 775.478f,  39.888f, 46.780f };
+    const Position SANGUINAR_WAITING_POSITION = { 761.850f,  27.459f, 46.779f };
+    const Position TELONICUS_TANK_POSITION =    { 773.717f,  44.091f, 46.780f };
+    const Position TELONICUS_WAITING_POSITION = { 754.347f,  31.739f, 46.796f };
+    const Position ADVISOR_HEAL_POSITION =      { 752.171f,  19.494f, 46.779f };
     const Position CAPERNIAN_WAITING_POSITION = { 743.897f, -11.575f, 46.779f };
-    const Position KAELTHAS_TANK_POSITION = { 799.390f, -0.837f, 48.729f };
+    const Position KAELTHAS_TANK_POSITION =     { 799.390f,  -0.837f, 48.729f };
 
     std::unordered_map<uint32, time_t> advisorDpsWaitTimer;
 
+    // (1) First priority is an assistant Warlock (real player or bot)
+    // (2) If no assistant Warlock, then look for any Warlock bot
     Player* GetCapernianTank(Player* bot)
     {
         Group* group = bot->GetGroup();
         if (!group)
             return nullptr;
 
-        // (1) Look for an assistant Warlock (real player or bot)
+        Player* fallbackWarlock = nullptr;
+
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() && member->getClass() == CLASS_WARLOCK &&
-                group->IsAssistant(member->GetGUID()))
+            if (!member || !member->IsAlive() || member->getClass() != CLASS_WARLOCK)
+                continue;
+
+            if (group->IsAssistant(member->GetGUID()))
                 return member;
+
+            if (!fallbackWarlock && GET_PLAYERBOT_AI(member))
+                fallbackWarlock = member;
         }
 
-        // (2) Fall back to first found bot Warlock
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) &&
-                member->getClass() == CLASS_WARLOCK)
-                return member;
-        }
-
-        // (3) Return nullptr if none found
-        return nullptr;
+        return fallbackWarlock;
     }
 
     // One Hunter will start on Sanguinar in Phase 3 with Melee to apply Armor Disruption
-    Player* GetDebuffHunter(Player* bot)
+    // (1) First priority is an assistant Hunter (real player or bot)
+    // (2) If no assistant Hunter, then look for any Hunter bot
+    bool IsDebuffHunter(Player* bot)
     {
+        if (bot->getClass() != CLASS_HUNTER || !bot->IsAlive())
+            return false;
+
         Group* group = bot->GetGroup();
         if (!group)
-            return nullptr;
+            return false;
 
-        // (1) Look for an assistant Hunter (real player or bot)
+        Player* fallbackHunter = nullptr;
+
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->IsAlive() && member->getClass() == CLASS_HUNTER &&
-                group->IsAssistant(member->GetGUID()))
-                return member;
-        }
-
-        // (2) Fall back to first found bot Hunter
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) &&
-                member->getClass() == CLASS_HUNTER)
-                return member;
-        }
-
-        return nullptr;
-    }
-
-    bool IsAnyLegendaryWeaponDead(PlayerbotAI* botAI, Player* bot)
-    {
-        static const std::array<std::pair<const char*, uint32>, 7> weapons =
-        {
-            std::make_pair("staff of disintegration", NPC_STAFF_OF_DISINTEGRATION),
-            std::make_pair("cosmic infuser", NPC_COSMIC_INFUSER),
-            std::make_pair("infinity blade", NPC_INFINITY_BLADES),
-            std::make_pair("warp slicer", NPC_WARP_SLICER),
-            std::make_pair("phaseshift bulwark", NPC_PHASESHIFT_BULWARK),
-            std::make_pair("netherstrand longbow", NPC_NETHERSTRAND_LONGBOW),
-            std::make_pair("devastation", NPC_DEVASTATION)
-        };
-
-        for (auto const& [name, entry] : weapons)
-        {
-            Unit* weapon =
-                botAI->GetAiObjectContext()->GetValue<Unit*>("find target", name)->Get();
-            if (weapon && weapon->IsAlive())
+            if (!member || !member->IsAlive() || member->getClass() != CLASS_HUNTER)
                 continue;
 
-            auto const& corpses =
-                botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest corpses")->Get();
-            for (auto const& guid : corpses)
-            {
-                LootObject loot(bot, guid);
-                WorldObject* object = loot.GetWorldObject(bot);
-                if (!object)
-                    continue;
+            if (group->IsAssistant(member->GetGUID()))
+                return member == bot;
 
-                if (Creature* creature = object->ToCreature();
-                    creature && creature->GetEntry() == entry && !creature->IsAlive())
-                    return true;
-            }
+            if (!fallbackHunter && GET_PLAYERBOT_AI(member))
+                fallbackHunter = member;
+        }
+
+        return fallbackHunter == bot;
+    }
+
+    bool IsAnyLegendaryWeaponDead(Player* bot)
+    {
+        static const std::array<uint32, 7> weaponEntries =
+        {
+            NPC_STAFF_OF_DISINTEGRATION,
+            NPC_COSMIC_INFUSER,
+            NPC_INFINITY_BLADES,
+            NPC_WARP_SLICER,
+            NPC_PHASESHIFT_BULWARK,
+            NPC_NETHERSTRAND_LONGBOW,
+            NPC_DEVASTATION
+        };
+
+        constexpr float searchRadius = 100.0f;
+
+        for (uint32 entry : weaponEntries)
+        {
+            Creature* weapon = bot->FindNearestCreature(entry, searchRadius, false);
+
+            if (weapon && !weapon->IsAlive())
+                return true;
         }
 
         return false;
@@ -412,49 +401,22 @@ namespace TempestKeepHelpers
 
     bool HasEquippableItemForSlot(Player* bot, uint8 slot)
     {
-        for (uint8 bag = INVENTORY_SLOT_BAG_START; bag < INVENTORY_SLOT_BAG_END; ++bag)
+        for (uint8 i = 0; i < 5; ++i)
         {
-            for (uint8 bagSlot = 0; bagSlot < MAX_BAG_SIZE; ++bagSlot)
+            uint8 bag = (i == 0) ? INVENTORY_SLOT_BAG_0 : (INVENTORY_SLOT_BAG_START + i - 1);
+            uint8 startSlot = (bag == INVENTORY_SLOT_BAG_0) ? INVENTORY_SLOT_ITEM_START : 0;
+            uint8 endSlot = (bag == INVENTORY_SLOT_BAG_0) ? INVENTORY_SLOT_ITEM_END :
+                            (bot->GetBagByPos(bag) ? bot->GetBagByPos(bag)->GetBagSize() : 0);
+
+            for (uint8 bagSlot = startSlot; bagSlot < endSlot; ++bagSlot)
             {
                 Item* item = bot->GetItemByPos(bag, bagSlot);
-                if (!item)
-                    continue;
-
-                ItemTemplate const* proto = item->GetTemplate();
-                if (!proto)
+                if (!item || !item->GetTemplate())
                     continue;
 
                 uint16 dest = 0;
-                if (bot->CanEquipItem(slot, dest, item, false))
+                if (bot->CanEquipItem(slot, dest, item, false) == EQUIP_ERR_OK)
                     return true;
-            }
-        }
-
-        return false;
-    }
-
-    bool HasEquippableOffhand(Player* bot)
-    {
-        for (uint8 bag = INVENTORY_SLOT_BAG_START; bag < INVENTORY_SLOT_BAG_END; ++bag)
-        {
-            for (uint8 bagSlot = 0; bagSlot < MAX_BAG_SIZE; ++bagSlot)
-            {
-                Item* item = bot->GetItemByPos(bag, bagSlot);
-                if (!item)
-                    continue;
-
-                ItemTemplate const* proto = item->GetTemplate();
-                if (!proto)
-                    continue;
-
-                if (proto->InventoryType == INVTYPE_SHIELD ||
-                    proto->InventoryType == INVTYPE_WEAPONOFFHAND ||
-                    proto->InventoryType == INVTYPE_HOLDABLE)
-                {
-                    uint16 dest = 0;
-                    if (bot->CanEquipItem(EQUIPMENT_SLOT_OFFHAND, dest, item, false))
-                        return true;
-                }
             }
         }
 

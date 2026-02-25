@@ -107,7 +107,7 @@ bool AlarPhase2EncounterIsAtRoomCenterTrigger::IsActive()
 
 bool AlarStrategyChangesBetweenPhasesTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(botAI, bot, TEMPEST_KEEP_MAP_ID, nullptr) &&
+    return botAI->IsDps(bot) && IsMechanicTrackerBot(botAI, bot, TEMPEST_KEEP_MAP_ID) &&
            AI_VALUE2(Unit*, "find target", "al'ar");
 }
 
@@ -144,6 +144,39 @@ bool VoidReaverBossLaunchesArcaneOrbsTrigger::IsActive()
 
     Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
     return voidReaver && voidReaver->GetVictim() != bot;
+}
+
+bool VoidReaverArcaneOrbIsIncomingTrigger::IsActive()
+{
+    if (botAI->IsTank(bot))
+        return false;
+
+    Unit* voidReaver = AI_VALUE2(Unit*, "find target", "void reaver");
+    if (!voidReaver || voidReaver->GetVictim() == bot)
+        return false;
+
+    auto it = voidReaverArcaneOrbs.find(bot->GetMap()->GetInstanceId());
+    if (it == voidReaverArcaneOrbs.end() || it->second.empty())
+        return false;
+
+    uint32 currentTime = getMSTime();
+    constexpr uint32 orbDuration = 7000;
+    constexpr float safeDistance = 22.0f;
+
+    for (auto const& orb : it->second)
+    {
+        if (getMSTimeDiff(orb.castTime, currentTime) <= orbDuration &&
+            bot->GetExactDist2d(orb.destination.GetPositionX(),
+                                orb.destination.GetPositionY()) < safeDistance)
+            return true;
+    }
+
+    return false;
+}
+
+bool VoidReaverBotIsNotInCombatTrigger::IsActive()
+{
+    return !bot->IsInCombat();
 }
 
 // High Astromancer Solarian
@@ -266,27 +299,27 @@ bool KaelthasSunstriderCapernianShouldBeTankedByAWarlockTrigger::IsActive()
     if (bot->getClass() != CLASS_WARLOCK)
         return false;
 
-    if (GetCapernianTank(bot) != bot)
+    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+    if (!capernian || capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ||
+        capernian->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
         return false;
 
-    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
-    return capernian && !capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
-           !capernian->HasAura(SPELL_PERMANENT_FEIGN_DEATH);
+    return GetCapernianTank(bot) == bot;
 }
 
 bool KaelthasSunstriderCapernianCastsArcaneBurstAndConflagrationTrigger::IsActive()
 {
-    if (GetCapernianTank(bot) == bot)
+    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
+    if (!capernian || capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) ||
+        capernian->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
         return false;
 
-    Unit* capernian = AI_VALUE2(Unit*, "find target", "grand astromancer capernian");
-    return capernian && !capernian->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
-           !capernian->HasAura(SPELL_PERMANENT_FEIGN_DEATH);
+    return GetCapernianTank(bot) != bot;
 }
 
 bool KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger::IsActive()
 {
-    if (!botAI->IsAssistTankOfIndex(bot, 0, true))
+    if (!botAI->IsAssistTankOfIndex(bot, 0, false))
         return false;
 
     Unit* telonicus = AI_VALUE2(Unit*, "find target", "master engineer telonicus");
@@ -296,12 +329,6 @@ bool KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger::IsActive()
 
 bool KaelthasSunstriderBotsHaveSpecificRolesInPhase3Trigger::IsActive()
 {
-    if (!botAI->IsAssistHealOfIndex(bot, 0, true) &&
-        !botAI->IsMainTank(bot) &&
-        !botAI->IsAssistTankOfIndex(bot, 0, true) &&
-        GetCapernianTank(bot) != bot)
-        return false;
-
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
     if (!kaelthas)
         return false;
@@ -311,12 +338,18 @@ bool KaelthasSunstriderBotsHaveSpecificRolesInPhase3Trigger::IsActive()
         return false;
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    return kaelAI && kaelAI->GetPhase() == PHASE_ALL_ADVISORS;
+    if (!kaelAI || kaelAI->GetPhase() != PHASE_ALL_ADVISORS)
+        return false;
+
+    return botAI->IsAssistHealOfIndex(bot, 0, true) ||
+           botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0, true) ||
+           (bot->getClass() == CLASS_WARLOCK && GetCapernianTank(bot) == bot);
 }
 
 bool KaelthasSunstriderDeterminingAdvisorKillOrderTrigger::IsActive()
 {
-    if (botAI->IsHeal(bot) || botAI->IsMainTank(bot) ||
+    if (botAI->IsHeal(bot) ||
+        botAI->IsMainTank(bot) ||
         botAI->IsAssistTankOfIndex(bot, 0, true))
         return false;
 
@@ -331,7 +364,7 @@ bool KaelthasSunstriderDeterminingAdvisorKillOrderTrigger::IsActive()
 
 bool KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger::IsActive()
 {
-    if (!IsMechanicTrackerBot(botAI, bot, TEMPEST_KEEP_MAP_ID, GetCapernianTank(bot)))
+    if (!botAI->IsDps(bot))
         return false;
 
     Unit* kaelthas = AI_VALUE2(Unit*, "find target", "kael'thas sunstrider");
@@ -339,7 +372,10 @@ bool KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger::IsActive()
         return false;
 
     boss_kaelthas* kaelAI = dynamic_cast<boss_kaelthas*>(kaelthas->GetAI());
-    return kaelAI && kaelAI->GetPhase() == PHASE_SINGLE_ADVISOR;
+    if (!kaelAI || kaelAI->GetPhase() != PHASE_SINGLE_ADVISOR)
+        return false;
+
+    return IsMechanicTrackerBot(botAI, bot, TEMPEST_KEEP_MAP_ID, GetCapernianTank(bot));
 }
 
 bool KaelthasSunstriderLegendaryWeaponsAreAliveTrigger::IsActive()
@@ -357,7 +393,8 @@ bool KaelthasSunstriderLegendaryWeaponsAreAliveTrigger::IsActive()
 
 bool KaelthasSunstriderLegendaryAxeCastsWhirlwindTrigger::IsActive()
 {
-    return botAI->IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "devastation");
+    return botAI->IsMainTank(bot) &&
+           AI_VALUE2(Unit*, "find target", "devastation");
 }
 
 bool KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger::IsActive()
@@ -375,7 +412,7 @@ bool KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger::IsActive()
     if (axe && axe->GetVictim() == bot)
         return false;
 
-    return IsAnyLegendaryWeaponDead(botAI, bot);
+    return IsAnyLegendaryWeaponDead(bot);
 }
 
 bool KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger::IsActive()
@@ -393,41 +430,32 @@ bool KaelthasSunstriderLegendaryWeaponsWereLostTrigger::IsActive()
     if (bot->GetMapId() != TEMPEST_KEEP_MAP_ID)
         return false;
 
-    constexpr uint32 KAELTHAS_DB_GUID = 158218;
     Map* map = bot->GetMap();
     if (!map)
         return false;
 
-    auto it = map->GetCreatureBySpawnIdStore().find(KAELTHAS_DB_GUID);
-    if (it == map->GetCreatureBySpawnIdStore().end())
+    constexpr uint32 KAELTHAS_DB_GUID = 158218;
+    auto const& creatureStore = map->GetCreatureBySpawnIdStore();
+    auto it = creatureStore.find(KAELTHAS_DB_GUID);
+    if (it == creatureStore.end())
         return false;
 
     Creature* kaelthas = it->second;
     if (!kaelthas || bot->GetExactDist2d(kaelthas) > 150.0f)
         return false;
 
-    Item* mainHand = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-    bool has2HWeapon = mainHand && mainHand->GetTemplate()->InventoryType == INVTYPE_2HWEAPON;
-
-    for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
+    const std::array<uint8, 3> weaponSlots =
     {
-        if (slot == EQUIPMENT_SLOT_BODY || slot == EQUIPMENT_SLOT_TABARD ||
-            (slot == EQUIPMENT_SLOT_OFFHAND && has2HWeapon))
-            continue;
+        EQUIPMENT_SLOT_MAINHAND,
+        EQUIPMENT_SLOT_OFFHAND,
+        EQUIPMENT_SLOT_RANGED
+    };
 
-        if (!bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
-        {
-            if (slot == EQUIPMENT_SLOT_OFFHAND)
-            {
-                if (!mainHand || mainHand->GetTemplate()->InventoryType != INVTYPE_WEAPON)
-                    continue;
-
-                if (HasEquippableOffhand(bot))
-                    return true;
-            }
-            else if (HasEquippableItemForSlot(bot, slot))
-                return true;
-        }
+    for (uint8 slot : weaponSlots)
+    {
+        if (!bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot) &&
+            HasEquippableItemForSlot(bot, slot))
+            return true;
     }
 
     return false;

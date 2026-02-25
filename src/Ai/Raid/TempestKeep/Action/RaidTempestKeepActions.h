@@ -159,6 +159,22 @@ private:
     int GetRangedDpsIndex(Group* group, int& rangedDpsCount);
 };
 
+class VoidReaverAvoidArcaneOrbAction : public MovementAction
+{
+public:
+    VoidReaverAvoidArcaneOrbAction(
+        PlayerbotAI* botAI, std::string const name = "void reaver avoid arcane orb") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class VoidReaverEraseTrackersAction : public Action
+{
+public:
+    VoidReaverEraseTrackersAction(
+        PlayerbotAI* botAI, std::string const name = "void reaver erase trackers") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 // High Astromancer Solarian
 
 class HighAstromancerSolarianRangedLeaveSpaceForMeleeAction : public MovementAction

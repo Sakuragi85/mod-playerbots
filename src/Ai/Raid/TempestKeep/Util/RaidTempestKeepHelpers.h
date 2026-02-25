@@ -21,6 +21,9 @@ namespace TempestKeepHelpers
         SPELL_REBIRTH_DIVE              = 35369,
         SPELL_MELT_ARMOR                = 35410,
 
+        // Void Reaver
+        SPELL_ARCANE_ORB                = 34172,
+
         // High Astromancer Solarian
         SPELL_SOLARIAN_TRANSFORM        = 39117,
         SPELL_WRATH_OF_THE_ASTROMANCER  = 42783,
@@ -81,9 +84,8 @@ namespace TempestKeepHelpers
 
     // General
     constexpr uint32 TEMPEST_KEEP_MAP_ID = 550;
-    Unit* GetNearestNonTankPlayerInRadius(Player* bot, float radius);
-    std::vector<Unit*> GetAllHazardTriggers(
-        PlayerbotAI* botAI, Player* bot, uint32 npcEntry, float maxSearchRadius);
+    Unit* GetNearestNonTankPlayerInRadius(PlayerbotAI* botAI, Player* bot, float radius);
+    std::vector<Unit*> GetAllHazardTriggers(Player* bot, uint32 npcEntry, float searchRadius);
     Position FindSafestNearbyPosition(Player* bot, const std::vector<Unit*>& hazards,
         float hazardRadius, const Position* center = nullptr);
     bool IsPathSafeFromHazards(
@@ -130,6 +132,13 @@ namespace TempestKeepHelpers
 
     // Void Reaver
     extern const Position VOID_REAVER_TANK_POSITION;
+    extern std::unordered_map<ObjectGuid, bool> hasReachedVoidReaverPosition;
+    struct ArcaneOrbData
+    {
+        Position destination;
+        uint32 castTime;
+    };
+    extern std::unordered_map<uint32, std::vector<ArcaneOrbData>> voidReaverArcaneOrbs;
 
     // Kael'thas Sunstrider <Lord of the Blood Elves>
     extern const Position SANGUINAR_TANK_POSITION;
@@ -141,10 +150,9 @@ namespace TempestKeepHelpers
     extern const Position KAELTHAS_TANK_POSITION;
     extern std::unordered_map<uint32, time_t> advisorDpsWaitTimer;
     Player* GetCapernianTank(Player* bot);
-    Player* GetDebuffHunter(Player* bot);
-    bool IsAnyLegendaryWeaponDead(PlayerbotAI* botAI, Player* bot);
+    bool IsDebuffHunter(Player* bot);
+    bool IsAnyLegendaryWeaponDead(Player* bot);
     bool HasEquippableItemForSlot(Player* bot, uint8 slot);
-    bool HasEquippableOffhand(Player* bot);
 }
 
 #endif

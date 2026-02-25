@@ -123,13 +123,6 @@ float VoidReaverMaintainPositionsMultiplier::GetValue(Action* action)
         !dynamic_cast<SetBehindTargetAction*>(action))
         return 0.0f;
 
-    if (botAI->IsRanged(bot) &&
-        (dynamic_cast<FleeAction*>(action) ||
-         dynamic_cast<CastBlinkBackAction*>(action) ||
-         dynamic_cast<CastDisengageAction*>(action) ||
-         dynamic_cast<ReachTargetAction*>(action)))
-         return 0.0f;
-
     return 1.0f;
 }
 
@@ -146,7 +139,7 @@ float HighAstromancerSolarianMaintainPositionMultiplier::GetValue(Action* action
          dynamic_cast<FleeAction*>(action) ||
          dynamic_cast<CastBlinkBackAction*>(action) ||
          dynamic_cast<CastDisengageAction*>(action)))
-         return 0.0f;
+        return 0.0f;
 
     if (!bot->HasAura(SPELL_WRATH_OF_THE_ASTROMANCER))
         return 1.0f;
@@ -154,7 +147,7 @@ float HighAstromancerSolarianMaintainPositionMultiplier::GetValue(Action* action
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
         (dynamic_cast<MovementAction*>(action) &&
          !dynamic_cast<HighAstromancerSolarianMoveAwayFromGroupAction*>(action)))
-         return 0.0f;
+        return 0.0f;
 
     return 1.0f;
 }
@@ -221,7 +214,7 @@ float KaelthasSunstriderWaitForDpsMultiplier::GetValue(Action* action)
             (dynamic_cast<AttackAction*>(action) ||
              (dynamic_cast<CastSpellAction*>(action) &&
               !dynamic_cast<CastHealingSpellAction*>(action))))
-              return 0.0f;
+            return 0.0f;
     }
 
     return 1.0f;
@@ -289,7 +282,7 @@ float KaelthasSunstriderKeepDistanceFromCapernianMultiplier::GetValue(Action* ac
     if (dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<AttackAction*>(action) &&
         !dynamic_cast<KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction*>(action))
-         return 0.0f;
+        return 0.0f;
 
     return 1.0f;
 }
@@ -331,7 +324,7 @@ float KaelthasSunstriderManageWeaponTankingMultiplier::GetValue(Action* action)
          dynamic_cast<CastDeathAndDecayAction*>(action) ||
          dynamic_cast<CastPestilenceAction*>(action) ||
          dynamic_cast<CastBloodBoilAction*>(action)))
-         return 0.0f;
+        return 0.0f;
 
     return 1.0f;
 }
@@ -387,7 +380,7 @@ float KaelthasSunstriderDelayCooldownsMultiplier::GetValue(Action* action)
     if (bot->getClass() == CLASS_SHAMAN &&
         (dynamic_cast<CastBloodlustAction*>(action) ||
          dynamic_cast<CastHeroismAction*>(action)))
-         return 0.0f;
+        return 0.0f;
 
     if (botAI->IsDps(bot) &&
         (dynamic_cast<CastMetamorphosisAction*>(action) ||
@@ -411,7 +404,7 @@ float KaelthasSunstriderDelayCooldownsMultiplier::GetValue(Action* action)
          dynamic_cast<CastBerserkingAction*>(action) ||
          dynamic_cast<CastBloodFuryAction*>(action) ||
          dynamic_cast<UseTrinketAction*>(action)))
-         return 0.0f;
+        return 0.0f;
 
     return 1.0f;
 }
