@@ -110,11 +110,6 @@ class JanalaiAvoidFireBombsAction : public MovementAction
 public:
     JanalaiAvoidFireBombsAction(PlayerbotAI* botAI, std::string const name = "jan'alai avoid fire bombs") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
-
-private:
-    Position FindSafestNearbyPosition(const std::vector<Unit*>& fireBombs, const Position& position, float maxRadius, float hazardRadius);
-    bool IsPathSafeFromFireBombs(const Position& start, const Position& end, const std::vector<Unit*>& fireBombs, float hazardRadius);
-    std::vector<Unit*> GetAllFireBombTriggers();
 };
 
 class JanalaiMarkAmanishiHatchersAction : public Action
@@ -177,22 +172,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class HexLordMalacrassPurgeBuffFromBossAction : public Action
-{
-public:
-    HexLordMalacrassPurgeBuffFromBossAction(
-        PlayerbotAI* botAI, std::string const name = "hex lord malacrass purge buff from boss") : Action(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
-class HexLordMalacrassDispelMindControlAction : public Action
-{
-public:
-    HexLordMalacrassDispelMindControlAction(
-        PlayerbotAI* botAI, std::string const name = "hex lord malacrass dispel mind control") : Action(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
 // Zul'jin
 
 class ZuljinMisdirectBossToMainTankAction : public AttackAction
@@ -224,11 +203,6 @@ class ZuljinAvoidCyclonesAction : public MovementAction
 public:
     ZuljinAvoidCyclonesAction(PlayerbotAI* botAI, std::string const name = "zul'jin avoid cyclones") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
-
-private:
-    Position FindSafestNearbyPosition(const std::vector<Unit*>& cyclones, const Position& position, float maxRadius, float hazardRadius);
-    bool IsPathSafeFromCyclones(const Position& start, const Position& end, const std::vector<Unit*>& cyclones, float hazardRadius);
-    std::vector<Unit*> GetAllCycloneTriggers();
 };
 
 class ZuljinSpreadRangedAction : public MovementAction
