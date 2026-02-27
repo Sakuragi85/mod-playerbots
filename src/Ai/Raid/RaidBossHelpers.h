@@ -19,6 +19,7 @@ Player* GetGroupMainTank(PlayerbotAI* botAI, Player* bot);
 Player* GetGroupFirstAssistTank(PlayerbotAI* botAI, Player* bot);
 Player* GetGroupSecondAssistTank(PlayerbotAI* botAI, Player* bot);
 Player* GetGroupThirdAssistTank(PlayerbotAI* botAI, Player* bot);
+Player* GetGroupAssistTank(PlayerbotAI* botAI, Player* bot, uint8 index);
 Unit* GetFirstAliveUnitByEntry(
     PlayerbotAI* botAI, uint32 entry);
 Unit* GetNearestPlayerInRadius(Player* bot, float radius);
