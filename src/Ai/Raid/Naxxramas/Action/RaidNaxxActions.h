@@ -9,16 +9,6 @@
 #include "Playerbots.h"
 #include "RaidNaxxBossHelper.h"
 
-// just for test
-// class TryToGetBossAIAction : public Action
-// {
-// public:
-//     TryToGetBossAIAction(PlayerbotAI* ai) : Action(ai, "try to get boss ai") {}
-
-// public:
-//     virtual bool Execute(Event event);
-// };
-
 class GrobbulusGoBehindAction : public MovementAction
 {
 public:
@@ -68,56 +58,56 @@ private:
     float distance;
 };
 
-class HeiganDanceAction : public MovementAction
-{
-public:
-    HeiganDanceAction(PlayerbotAI* ai) : MovementAction(ai, "heigan dance")
-    {
-        this->last_eruption_ms = 0;
-        this->platform_phase = false;
-        ResetSafe();
-        waypoints.push_back(std::make_pair(2794.88f, -3668.12f));
-        waypoints.push_back(std::make_pair(2775.49f, -3674.43f));
-        waypoints.push_back(std::make_pair(2762.30f, -3684.59f));
-        waypoints.push_back(std::make_pair(2755.99f, -3703.96f));
-        platform = std::make_pair(2794.26f, -3706.67f);
-    }
-
-protected:
-    bool CalculateSafe();
-    void ResetSafe()
-    {
-        curr_safe = 0;
-        curr_dir = 1;
-    }
-    void NextSafe()
-    {
-        curr_safe += curr_dir;
-        if (curr_safe == 3 || curr_safe == 0)
-        {
-            curr_dir = -curr_dir;
-        }
-    }
-    uint32 last_eruption_ms;
-    bool platform_phase;
-    uint32 curr_safe, curr_dir;
-    std::vector<std::pair<float, float>> waypoints;
-    std::pair<float, float> platform;
-};
-
-class HeiganDanceMeleeAction : public HeiganDanceAction
-{
-public:
-    HeiganDanceMeleeAction(PlayerbotAI* ai) : HeiganDanceAction(ai) {}
-    virtual bool Execute(Event event);
-};
-
-class HeiganDanceRangedAction : public HeiganDanceAction
-{
-public:
-    HeiganDanceRangedAction(PlayerbotAI* ai) : HeiganDanceAction(ai) {}
-    virtual bool Execute(Event event);
-};
+//class HeiganDanceAction : public MovementAction
+//{
+//public:
+//    HeiganDanceAction(PlayerbotAI* ai) : MovementAction(ai, "heigan dance")
+//    {
+//        this->last_eruption_ms = 0;
+//        this->platform_phase = false;
+//        ResetSafe();
+//        waypoints.push_back(std::make_pair(2794.88f, -3668.12f));
+//        waypoints.push_back(std::make_pair(2775.49f, -3674.43f));
+//        waypoints.push_back(std::make_pair(2762.30f, -3684.59f));
+//        waypoints.push_back(std::make_pair(2755.99f, -3703.96f));
+//        platform = std::make_pair(2794.26f, -3706.67f);
+//    }
+//
+//protected:
+//    bool CalculateSafe();
+//    void ResetSafe()
+//    {
+//        curr_safe = 0;
+//        curr_dir = 1;
+//    }
+//    void NextSafe()
+//    {
+//        curr_safe += curr_dir;
+//        if (curr_safe == 3 || curr_safe == 0)
+//        {
+//            curr_dir = -curr_dir;
+//        }
+//    }
+//    uint32 last_eruption_ms;
+//    bool platform_phase;
+//    uint32 curr_safe, curr_dir;
+//    std::vector<std::pair<float, float>> waypoints;
+//    std::pair<float, float> platform;
+//};
+//
+//class HeiganDanceMeleeAction : public HeiganDanceAction
+//{
+//public:
+//    HeiganDanceMeleeAction(PlayerbotAI* ai) : HeiganDanceAction(ai) {}
+//    virtual bool Execute(Event event);
+//};
+//
+//class HeiganDanceRangedAction : public HeiganDanceAction
+//{
+//public:
+//    HeiganDanceRangedAction(PlayerbotAI* ai) : HeiganDanceAction(ai) {}
+//    virtual bool Execute(Event event);
+//};
 
 class ThaddiusAttackNearestPetAction : public AttackAction
 {
@@ -332,11 +322,11 @@ private:
     LoathebBossHelper helper;
 };
 
-class PatchwerkRangedPositionAction : public MovementAction
-{
-public:
-    PatchwerkRangedPositionAction(PlayerbotAI* ai) : MovementAction(ai, "patchwerk ranged position") {}
-    bool Execute(Event event) override;
-};
+//class PatchwerkRangedPositionAction : public MovementAction
+//{
+//public:
+//    PatchwerkRangedPositionAction(PlayerbotAI* ai) : MovementAction(ai, "patchwerk ranged position") {}
+//    bool Execute(Event event) override;
+//};
 
 #endif

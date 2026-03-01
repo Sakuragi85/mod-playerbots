@@ -1,6 +1,6 @@
 
-#ifndef _PLAYERRBOT_RAIDNAXXMULTIPLIERS_H_
-#define _PLAYERRBOT_RAIDNAXXMULTIPLIERS_H_
+#ifndef _PLAYERRBOT_RAIDNAXXMULTIPLIERS_H
+#define _PLAYERRBOT_RAIDNAXXMULTIPLIERS_H
 
 #include "Multiplier.h"
 #include "RaidNaxxBossHelper.h"
@@ -13,14 +13,15 @@ public:
 public:
     virtual float GetValue(Action* action);
 };
-class HeiganDanceMultiplier : public Multiplier
-{
-public:
-    HeiganDanceMultiplier(PlayerbotAI* ai) : Multiplier(ai, "helgan dance") {}
 
-public:
-    virtual float GetValue(Action* action);
-};
+//class HeiganDanceMultiplier : public Multiplier
+//{
+//public:
+//    HeiganDanceMultiplier(PlayerbotAI* ai) : Multiplier(ai, "helgan dance") {}
+//
+//public:
+//    virtual float GetValue(Action* action);
+//};
 
 class LoathebGenericMultiplier : public Multiplier
 {
