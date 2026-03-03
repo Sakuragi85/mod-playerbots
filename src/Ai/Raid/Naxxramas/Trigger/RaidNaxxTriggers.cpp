@@ -86,25 +86,25 @@ bool GrobbulusCloudTrigger::IsActive()
     return true;
 }
 
-bool HeiganMeleeTrigger::IsActive()
-{
-    Unit* heigan = AI_VALUE2(Unit*, "find target", "heigan the unclean");
-    if (!heigan)
-    {
-        return false;
-    }
-    return !botAI->IsRanged(bot);
-}
-
-bool HeiganRangedTrigger::IsActive()
-{
-    Unit* heigan = AI_VALUE2(Unit*, "find target", "heigan the unclean");
-    if (!heigan)
-    {
-        return false;
-    }
-    return botAI->IsRanged(bot);
-}
+//bool HeiganMeleeTrigger::IsActive()
+//{
+//    Unit* heigan = AI_VALUE2(Unit*, "find target", "heigan the unclean");
+//    if (!heigan)
+//    {
+//        return false;
+//    }
+//    return !botAI->IsRanged(bot);
+//}
+//
+//bool HeiganRangedTrigger::IsActive()
+//{
+//    Unit* heigan = AI_VALUE2(Unit*, "find target", "heigan the unclean");
+//    if (!heigan)
+//    {
+//        return false;
+//    }
+//    return botAI->IsRanged(bot);
+//}
 
 bool RazuviousTankTrigger::IsActive()
 {
@@ -223,35 +223,35 @@ bool MaexxnaTrigger::IsActive()
     return !botAI->IsTank(bot);
 }
 
-bool PatchwerkTankTrigger::IsActive()
-{
-    Unit* boss = AI_VALUE2(Unit*, "find target", "patchwerk");
-    if (!boss)
-    {
-        return false;
-    }
-    return !botAI->IsTank(bot) && !botAI->IsRanged(bot);
-}
-
-bool PatchwerkRangedTrigger::IsActive()
-{
-    Unit* boss = AI_VALUE2(Unit*, "find target", "patchwerk");
-    if (!boss)
-    {
-        return false;
-    }
-    return !botAI->IsTank(bot) && botAI->IsRanged(bot);
-}
-
-bool PatchwerkNonTankTrigger::IsActive()
-{
-    Unit* boss = AI_VALUE2(Unit*, "find target", "patchwerk");
-    if (!boss)
-    {
-        return false;
-    }
-    return !botAI->IsTank(bot);
-}
+//bool PatchwerkTankTrigger::IsActive()
+//{
+//    Unit* boss = AI_VALUE2(Unit*, "find target", "patchwerk");
+//    if (!boss)
+//    {
+//        return false;
+//    }
+//    return !botAI->IsTank(bot) && !botAI->IsRanged(bot);
+//}
+//
+//bool PatchwerkRangedTrigger::IsActive()
+//{
+//    Unit* boss = AI_VALUE2(Unit*, "find target", "patchwerk");
+//    if (!boss)
+//    {
+//        return false;
+//    }
+//    return !botAI->IsTank(bot) && botAI->IsRanged(bot);
+//}
+//
+//bool PatchwerkNonTankTrigger::IsActive()
+//{
+//    Unit* boss = AI_VALUE2(Unit*, "find target", "patchwerk");
+//    if (!boss)
+//    {
+//        return false;
+//    }
+//    return !botAI->IsTank(bot);
+//}
 
 bool LoathebTrigger::IsActive() { return helper.UpdateBossAI(); }
 
