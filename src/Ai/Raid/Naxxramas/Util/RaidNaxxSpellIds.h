@@ -125,16 +125,12 @@ namespace NaxxSpellIds
     inline bool HasAnyAura(PlayerbotAI* botAI, Unit* unit, std::initializer_list<uint32> spellIds)
     {
         if (!botAI || !unit)
-        {
             return false;
-        }
 
         for (uint32 spellId : spellIds)
         {
             if (botAI->HasAura(spellId, unit))
-            {
                 return true;
-            }
         }
         return false;
     }
@@ -142,16 +138,12 @@ namespace NaxxSpellIds
     inline Aura* GetAnyAura(Unit* unit, std::initializer_list<uint32> spellIds)
     {
         if (!unit)
-        {
             return nullptr;
-        }
 
         for (uint32 spellId : spellIds)
         {
             if (Aura* aura = unit->GetAura(spellId))
-            {
                 return aura;
-            }
         }
         return nullptr;
     }
@@ -159,16 +151,12 @@ namespace NaxxSpellIds
     inline bool MatchesAnySpellId(SpellInfo const* info, std::initializer_list<uint32> spellIds)
     {
         if (!info)
-        {
             return false;
-        }
 
         for (uint32 spellId : spellIds)
         {
             if (info->Id == spellId)
-            {
                 return true;
-            }
         }
         return false;
     }

@@ -31,7 +31,10 @@ public:
 class AuraRemovedTrigger : public Trigger
 {
 public:
-    AuraRemovedTrigger(PlayerbotAI* botAI, std::string name) : Trigger(botAI, name, 1) { this->prev_check = false; }
+    AuraRemovedTrigger(PlayerbotAI* botAI, std::string name) : Trigger(botAI, name, 1)
+    {
+        this->prev_check = false;
+    }
     virtual bool IsActive() override;
 
 protected:
@@ -236,9 +239,7 @@ private:
 class GluthMainTankMortalWoundTrigger : public Trigger
 {
 public:
-    GluthMainTankMortalWoundTrigger(PlayerbotAI* ai) : Trigger(ai, "gluth main tank mortal wound trigger"), helper(ai)
-    {
-    }
+    GluthMainTankMortalWoundTrigger(PlayerbotAI* ai) : Trigger(ai, "gluth main tank mortal wound trigger"), helper(ai) {}
     bool IsActive() override;
 
 private:

@@ -28,40 +28,32 @@ public:
     virtual bool UpdateBossAI()
     {
         if (!bot->IsInCombat())
-        {
             _unit = nullptr;
-        }
+
         if (_unit && (!_unit->IsInWorld() || !_unit->IsAlive()))
-        {
             _unit = nullptr;
-        }
+
         if (!_unit)
         {
             _unit = AI_VALUE2(Unit*, "find target", _name);
             if (!_unit)
-            {
                 return false;
-            }
+
             _target = _unit->ToCreature();
             if (!_target)
-            {
                 return false;
-            }
+
             _ai = dynamic_cast<BossAiType*>(_target->GetAI());
             if (!_ai)
-            {
                 return false;
-            }
+
             _event_map = &_ai->events;
             if (!_event_map)
-            {
                 return false;
-            }
         }
         if (!_event_map)
-        {
             return false;
-        }
+
         _timer = getMSTime();
         return true;
     }
@@ -93,17 +85,14 @@ public:
     bool UpdateBossAI()
     {
         if (!bot->IsInCombat())
-        {
             Reset();
-        }
+
         if (_unit && (!_unit->IsInWorld() || !_unit->IsAlive()))
-        {
             Reset();
-        }
+
         if (!_unit)
-        {
             _unit = AI_VALUE2(Unit*, "find target", "kel'thuzad");
-        }
+
         return _unit != nullptr;
     }
     bool IsPhaseOne() { return _unit && _unit->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE); }
@@ -118,9 +107,7 @@ public:
             if (!unit)
                 continue;
             if (botAI->EqualLowercaseName(unit->GetName(), "shadow fissure"))
-            {
                 shadow_fissure = unit;
-            }
         }
         return shadow_fissure;
     }
@@ -138,17 +125,14 @@ public:
     bool UpdateBossAI()
     {
         if (!bot->IsInCombat())
-        {
             Reset();
-        }
+
         if (_unit && (!_unit->IsInWorld() || !_unit->IsAlive()))
-        {
             Reset();
-        }
+
         if (!_unit)
-        {
             _unit = AI_VALUE2(Unit*, "find target", "instructor razuvious");
-        }
+
         return _unit != nullptr;
     }
 
@@ -168,26 +152,21 @@ public:
     bool UpdateBossAI()
     {
         if (!bot->IsInCombat())
-        {
             Reset();
-        }
+
         if (_unit && (!_unit->IsInWorld() || !_unit->IsAlive()))
-        {
             Reset();
-        }
+
         if (!_unit)
         {
             _unit = AI_VALUE2(Unit*, "find target", "sapphiron");
             if (!_unit)
-            {
                 return false;
-            }
         }
         bool now_flying = _unit->IsFlying();
         if (_was_flying && !now_flying)
-        {
             _last_land_ms = getMSTime();
-        }
+
         _was_flying = now_flying;
         return true;
     }
@@ -196,26 +175,23 @@ public:
     bool JustLanded()
     {
         if (!_last_land_ms)
-        {
             return false;
-        }
+
         return getMSTime() - _last_land_ms <= POSITION_TIME_AFTER_LANDED;
     }
     bool WaitForExplosion()
     {
         if (!IsPhaseFlight())
-        {
             return false;
-        }
+
         Group* group = bot->GetGroup();
         if (!group)
-        {
             return false;
-        }
+
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-      if (member &&
+            if (member &&
                 (NaxxSpellIds::HasAnyAura(botAI, member, {NaxxSpellIds::Icebolt10, NaxxSpellIds::Icebolt25}) ||
                  botAI->HasAura("icebolt", member, false, false, -1, true)))
             {
@@ -233,14 +209,12 @@ public:
             aura = botAI->GetAura("chill", bot);
         }
         if (!aura)
-        {
             return false;
-        }
+
         DynamicObject* dyn_obj = aura->GetDynobjOwner();
         if (!dyn_obj)
-        {
             return false;
-        }
+
         Unit* currentTarget = AI_VALUE(Unit*, "current target");
         float angle = 0;
         uint32 index = botAI->GetGroupSlotIndex(bot);
@@ -249,41 +223,28 @@ public:
             if (botAI->IsRanged(bot))
             {
                 if (bot->GetExactDist2d(currentTarget) <= 45.0f)
-                {
                     angle = bot->GetAngle(dyn_obj) - M_PI + (rand_norm() - 0.5) * M_PI / 2;
-                }
                 else
                 {
                     if (index % 2 == 0)
-                    {
                         angle = bot->GetAngle(currentTarget) + M_PI / 2;
-                    }
                     else
-                    {
                         angle = bot->GetAngle(currentTarget) - M_PI / 2;
-                    }
                 }
             }
             else
             {
                 if (index % 3 == 0)
-                {
                     angle = bot->GetAngle(currentTarget);
-                }
                 else if (index % 3 == 1)
-                {
                     angle = bot->GetAngle(currentTarget) + M_PI / 2;
-                }
                 else
-                {
                     angle = bot->GetAngle(currentTarget) - M_PI / 2;
-                }
             }
         }
         else
-        {
             angle = bot->GetAngle(dyn_obj) - M_PI + (rand_norm() - 0.5) * M_PI / 2;
-        }
+
         dest = {bot->GetPositionX() + cos(angle) * 5.0f, bot->GetPositionY() + sin(angle) * 5.0f, bot->GetPositionZ()};
         return true;
     }
@@ -318,59 +279,47 @@ public:
     bool UpdateBossAI()
     {
         if (!bot->IsInCombat())
-        {
             Reset();
-        }
+
         if (_unit && (!_unit->IsInWorld() || !_unit->IsAlive()))
-        {
             Reset();
-        }
+
         if (!_unit)
         {
             _unit = AI_VALUE2(Unit*, "find target", "gluth");
             if (!_unit)
-            {
                 return false;
-            }
         }
         if (_unit->IsInCombat())
         {
             if (_combat_start_ms == 0)
-            {
                 _combat_start_ms = getMSTime();
-            }
         }
         else
-        {
             _combat_start_ms = 0;
-        }
+
         return true;
     }
     bool BeforeDecimate()
     {
         if (!_unit || !_unit->HasUnitState(UNIT_STATE_CASTING))
-        {
             return false;
-        }
+
         Spell* spell = _unit->GetCurrentSpell(CURRENT_GENERIC_SPELL);
         if (!spell)
-        {
             spell = _unit->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
-        }
+
         if (!spell)
-        {
             return false;
-        }
+
         SpellInfo const* info = spell->GetSpellInfo();
         if (!info)
-        {
             return false;
-        }
+
         if (NaxxSpellIds::MatchesAnySpellId(
                 info, {NaxxSpellIds::Decimate10, NaxxSpellIds::Decimate25, NaxxSpellIds::Decimate25Alt}))
-        {
             return true;
-        }
+
         // Fallback to name for custom spell data.
         return info->SpellName[LOCALE_enUS] && botAI->EqualLowercaseName(info->SpellName[LOCALE_enUS], "decimate");
     }
@@ -397,17 +346,14 @@ public:
     bool UpdateBossAI()
     {
         if (!bot->IsInCombat())
-        {
             Reset();
-        }
+
         if (_unit && (!_unit->IsInWorld() || !_unit->IsAlive()))
-        {
             Reset();
-        }
+
         if (!_unit)
-        {
             _unit = AI_VALUE2(Unit*, "find target", "loatheb");
-        }
+
         return _unit != nullptr;
     }
 
@@ -427,24 +373,19 @@ public:
     bool UpdateBossAI()
     {
         if (!bot->IsInCombat())
-        {
             Reset();
-        }
+
         else if (_combat_start_ms == 0)
-        {
             _combat_start_ms = getMSTime();
-        }
+
         if (_sir && (!_sir->IsInWorld() || !_sir->IsAlive()))
-        {
             Reset();
-        }
+
         if (!_sir)
         {
             _sir = AI_VALUE2(Unit*, "find target", "sir zeliek");
             if (!_sir)
-            {
                 return false;
-            }
         }
         _lady = AI_VALUE2(Unit*, "find target", "lady blaumeux");
         return true;
@@ -471,18 +412,14 @@ public:
         bool raid25 = bot->GetRaidDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL;
         Unit* lady = _lady;
         if (!lady)
-        {
             posToGo = 0;
-        }
         else
         {
             uint32 elapsed_ms = _combat_start_ms ? getMSTime() - _combat_start_ms : 0;
             // Interval: 24s - 15s - 15s - ...
             posToGo = !(elapsed_ms <= 9000 || ((elapsed_ms - 9000) / 67500) % 2 == 0);
             if (botAI->IsAssistRangedDpsOfIndex(bot, 0) || (raid25 && botAI->IsAssistHealOfIndex(bot, 1)))
-            {
                 posToGo = 1 - posToGo;
-            }
         }
     }
     std::pair<float, float> CurrentAttractPos()
@@ -507,9 +444,8 @@ public:
     Unit* CurrentAttackTarget()
     {
         if (posToGo == 0)
-        {
             return _sir;
-        }
+
         return _lady;
     }
 
@@ -531,20 +467,16 @@ public:
     bool UpdateBossAI()
     {
         if (!bot->IsInCombat())
-        {
             Reset();
-        }
+
         if (_unit && (!_unit->IsInWorld() || !_unit->IsAlive()))
-        {
             Reset();
-        }
+
         if (!_unit)
         {
             _unit = AI_VALUE2(Unit*, "find target", "thaddius");
             if (!_unit)
-            {
                 return false;
-            }
         }
         feugen = AI_VALUE2(Unit*, "find target", "feugen");
         stalagg = AI_VALUE2(Unit*, "find target", "stalagg");
@@ -554,9 +486,8 @@ public:
     bool IsPhaseTransition()
     {
         if (IsPhasePet())
-        {
             return false;
-        }
+
         return _unit && _unit->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
     }
     bool IsPhaseThaddius() { return !IsPhasePet() && !IsPhaseTransition(); }
@@ -564,29 +495,25 @@ public:
     {
         Unit* unit = nullptr;
         if (feugen && feugen->IsAlive())
-        {
             unit = feugen;
-        }
+
         if (stalagg && stalagg->IsAlive() && (!feugen || bot->GetDistance(stalagg) < bot->GetDistance(feugen)))
-        {
             unit = stalagg;
-        }
+
         return unit;
     }
     std::pair<float, float> PetPhaseGetPosForTank()
     {
         if (GetNearestPet() == feugen)
-        {
             return tankPosFeugen;
-        }
+
         return tankPosStalagg;
     }
     std::pair<float, float> PetPhaseGetPosForRanged()
     {
         if (GetNearestPet() == feugen)
-        {
             return rangedPosFeugen;
-        }
+
         return rangedPosStalagg;
     }
 

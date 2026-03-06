@@ -237,7 +237,7 @@ bool MaxDpsChatShortcutAction::Execute(Event /*event*/)
     return true;
 }
 
-bool NaxxChatShortcutAction::Execute(Event event)
+bool NaxxChatShortcutAction::Execute(Event /*event*/)
 {
     Player* master = GetMaster();
     if (!master)

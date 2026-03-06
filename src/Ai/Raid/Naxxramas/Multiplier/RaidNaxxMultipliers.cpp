@@ -26,17 +26,14 @@ float GrobbulusMultiplier::GetValue(Action* action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "grobbulus");
     if (!boss)
-    {
         return 1.0f;
-    }
+
     if (dynamic_cast<AvoidAoeAction*>(action))
-    {
         return botAI->IsMainTank(bot) ? 0.0f : 1.0f;
-    }
+
     if (dynamic_cast<CombatFormationMoveAction*>(action))
-    {
         return 0.0f;
-    }
+
     return 1.0f;
 }
 
@@ -107,9 +104,8 @@ float LoathebGenericMultiplier::GetValue(Action* action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "loatheb");
     if (!boss)
-    {
         return 1.0f;
-    }
+
     context->GetValue<bool>("neglect threat")->Set(true);
     if (botAI->GetState() == BOT_STATE_COMBAT &&
         (dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action) ||
@@ -119,9 +115,8 @@ float LoathebGenericMultiplier::GetValue(Action* action)
         return 0.0f;
     }
     if (!dynamic_cast<CastHealingSpellAction*>(action))
-    {
         return 1.0f;
-    }
+
     Aura* aura = NaxxSpellIds::GetAnyAura(bot, {NaxxSpellIds::NecroticAura10});
     if (!aura)
     {
@@ -129,18 +124,16 @@ float LoathebGenericMultiplier::GetValue(Action* action)
         aura = botAI->GetAura("necrotic aura", bot);
     }
     if (!aura || aura->GetDuration() <= 1500)
-    {
         return 1.0f;
-    }
+
     return 0.0f;
 }
 
 float ThaddiusGenericMultiplier::GetValue(Action* action)
 {
     if (!helper.UpdateBossAI())
-    {
         return 1.0f;
-    }
+
     if (dynamic_cast<CombatFormationMoveAction*>(action))
         return 0.0f;
     // pet phase
@@ -159,9 +152,7 @@ float ThaddiusGenericMultiplier::GetValue(Action* action)
         (feugen->GetHealthPct() >= target->GetHealthPct() + 3 || stalagg->GetHealthPct() >= target->GetHealthPct() + 3))
     {
         if (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action))
-        {
             return 0.0f;
-        }
     }
     // magnetic pull
     // uint32 curr_timer = eventMap->GetTimer();
@@ -185,22 +176,19 @@ float ThaddiusGenericMultiplier::GetValue(Action* action)
 float SapphironGenericMultiplier::GetValue(Action* action)
 {
     if (!helper.UpdateBossAI())
-    {
         return 1.0f;
-    }
+
     if (dynamic_cast<CastDeathGripAction*>(action) || dynamic_cast<CombatFormationMoveAction*>(action))
-    {
         return 0.0f;
-    }
+
     return 1.0f;
 }
 
 float InstructorRazuviousGenericMultiplier::GetValue(Action* action)
 {
     if (!helper.UpdateBossAI())
-    {
         return 1.0f;
-    }
+
     context->GetValue<bool>("neglect threat")->Set(true);
     if (botAI->GetState() == BOT_STATE_COMBAT &&
         (dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action) ||
@@ -215,9 +203,8 @@ float InstructorRazuviousGenericMultiplier::GetValue(Action* action)
 float KelthuzadGenericMultiplier::GetValue(Action* action)
 {
     if (!helper.UpdateBossAI())
-    {
         return 1.0f;
-    }
+
     if ((dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action) ||
          dynamic_cast<CastDebuffSpellOnAttackerAction*>(action) || dynamic_cast<FleeAction*>(action)))
     {
@@ -236,9 +223,8 @@ float KelthuzadGenericMultiplier::GetValue(Action* action)
     if (helper.IsPhaseTwo())
     {
         if (dynamic_cast<CastBlizzardAction*>(action) || dynamic_cast<CastFrostNovaAction*>(action))
-        {
             return 0.0f;
-        }
+
     }
     return 1.0f;
 }
@@ -247,17 +233,14 @@ float AnubrekhanGenericMultiplier::GetValue(Action* action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "anub'rekhan");
     if (!boss)
-    {
         return 1.0f;
-    }
+
     if (NaxxSpellIds::HasAnyAura(
             botAI, boss, {NaxxSpellIds::LocustSwarm10, NaxxSpellIds::LocustSwarm10Alt, NaxxSpellIds::LocustSwarm25}) ||
         botAI->HasAura("locust swarm", boss))
     {
         if (dynamic_cast<FleeAction*>(action))
-        {
             return 0.0f;
-        }
     }
     return 1.0f;
 }
@@ -266,14 +249,12 @@ float FourhorsemanGenericMultiplier::GetValue(Action* action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "sir zeliek");
     if (!boss)
-    {
         return 1.0f;
-    }
+
     context->GetValue<bool>("neglect threat")->Set(true);
     if ((dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action)))
-    {
         return 0.0f;
-    }
+
     return 1.0f;
 }
 
@@ -305,9 +286,8 @@ float FourhorsemanGenericMultiplier::GetValue(Action* action)
 float GluthGenericMultiplier::GetValue(Action* action)
 {
     if (!helper.UpdateBossAI())
-    {
         return 1.0f;
-    }
+
     if ((dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action) ||
          dynamic_cast<FleeAction*>(action) || dynamic_cast<CastDebuffSpellOnAttackerAction*>(action) ||
          dynamic_cast<CastStarfallAction*>(action)))
@@ -336,9 +316,7 @@ float GluthGenericMultiplier::GetValue(Action* action)
     {
         Unit* target = AI_VALUE(Unit*, "current target");
         if (helper.IsZombieChow(target))
-        {
             return 0.0f;
-        }
     }
     return 1.0f;
 }

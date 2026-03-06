@@ -7,32 +7,27 @@
 bool ThaddiusAttackNearestPetAction::isUseful()
 {
     if (!helper.UpdateBossAI())
-    {
         return false;
-    }
+
     if (!helper.IsPhasePet())
-    {
         return false;
-    }
+
     Unit* target = helper.GetNearestPet();
     if (!bot->IsWithinDistInMap(target, 50.0f))
-    {
         return false;
-    }
+
     return true;
 }
 
-bool ThaddiusAttackNearestPetAction::Execute(Event event)
+bool ThaddiusAttackNearestPetAction::Execute(Event /*event*/)
 {
     Unit* target = helper.GetNearestPet();
     if (!bot->IsWithinLOSInMap(target))
-    {
         return MoveTo(target, 0, MovementPriority::MOVEMENT_COMBAT);
-    }
+
     if (AI_VALUE(Unit*, "current target") != target)
-    {
         return Attack(target);
-    }
+
     if (botAI->IsTank(bot) && AI_VALUE2(bool, "has aggro", "current target"))
     {
         std::pair<float, float> posForTank = helper.PetPhaseGetPosForTank();
@@ -48,7 +43,7 @@ bool ThaddiusAttackNearestPetAction::Execute(Event event)
 
 bool ThaddiusMoveToPlatformAction::isUseful() { return true; }
 
-bool ThaddiusMoveToPlatformAction::Execute(Event event)
+bool ThaddiusMoveToPlatformAction::Execute(Event /*event*/)
 {
     std::vector<std::pair<float, float>> position = {
         // high left
@@ -89,9 +84,8 @@ bool ThaddiusMoveToPlatformAction::Execute(Event event)
         }
     }
     else
-    {
         return MoveTo(bot->GetMapId(), position[4].first, position[4].second, low_z, false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
-    }
+
     return true;
 }
 
@@ -100,7 +94,7 @@ bool ThaddiusMovePolarityAction::isUseful()
     return !botAI->IsMainTank(bot) || AI_VALUE2(bool, "has aggro", "current target");
 }
 
-bool ThaddiusMovePolarityAction::Execute(Event event)
+bool ThaddiusMovePolarityAction::Execute(Event /*event*/)
 {
     std::vector<std::pair<float, float>> position = {
         // left melee

@@ -28,9 +28,7 @@ class GrobbulusRotateAction : public RotateAroundTheCenterPointAction
 {
 public:
     GrobbulusRotateAction(PlayerbotAI* botAI)
-        : RotateAroundTheCenterPointAction(botAI, "rotate grobbulus", 3281.23f, -3310.38f, 35.0f, 8, true, M_PI)
-    {
-    }
+        : RotateAroundTheCenterPointAction(botAI, "rotate grobbulus", 3281.23f, -3310.38f, 35.0f, 8, true, M_PI) {}
     virtual bool isUseful() override
     {
         return RotateAroundTheCenterPointAction::isUseful() && botAI->IsMainTank(bot) &&
@@ -263,9 +261,7 @@ class AnubrekhanPositionAction : public RotateAroundTheCenterPointAction
 {
 public:
     AnubrekhanPositionAction(PlayerbotAI* ai)
-        : RotateAroundTheCenterPointAction(ai, "anub'rekhan position", 3272.49f, -3476.27f, 45.0f, 16)
-    {
-    }
+        : RotateAroundTheCenterPointAction(ai, "anub'rekhan position", 3272.49f, -3476.27f, 45.0f, 16) {}
     bool Execute(Event event) override;
 };
 
@@ -283,9 +279,7 @@ class GluthPositionAction : public RotateAroundTheCenterPointAction
 {
 public:
     GluthPositionAction(PlayerbotAI* ai)
-        : RotateAroundTheCenterPointAction(ai, "gluth position", 3293.61f, -3149.01f, 12.0f, 12), helper(ai)
-    {
-    }
+        : RotateAroundTheCenterPointAction(ai, "gluth position", 3293.61f, -3149.01f, 12.0f, 12), helper(ai) {}
     bool Execute(Event event) override;
 
 private:
