@@ -9,6 +9,7 @@
 #include "RaidGruulsLairStrategy.h"
 #include "RaidMagtheridonStrategy.h"
 #include "RaidSSCStrategy.h"
+#include "RaidTempestKeepStrategy.h"
 #include "RaidBlackTempleStrategy.h"
 #include "RaidOsStrategy.h"
 #include "RaidEoEStrategy.h"
@@ -29,6 +30,7 @@ public:
         creators["gruulslair"] = &RaidStrategyContext::gruulslair;
         creators["magtheridon"] = &RaidStrategyContext::magtheridon;
         creators["ssc"] = &RaidStrategyContext::ssc;
+        creators["tempestkeep"] = &RaidStrategyContext::tempestkeep;
         creators["blacktemple"] = &RaidStrategyContext::blacktemple;
         creators["wotlk-os"] = &RaidStrategyContext::wotlk_os;
         creators["wotlk-eoe"] = &RaidStrategyContext::wotlk_eoe;
@@ -46,6 +48,7 @@ private:
     static Strategy* gruulslair(PlayerbotAI* botAI) { return new RaidGruulsLairStrategy(botAI); }
     static Strategy* magtheridon(PlayerbotAI* botAI) { return new RaidMagtheridonStrategy(botAI); }
     static Strategy* ssc(PlayerbotAI* botAI) { return new RaidSSCStrategy(botAI); }
+    static Strategy* tempestkeep(PlayerbotAI* botAI) { return new RaidTempestKeepStrategy(botAI); }
     static Strategy* blacktemple(PlayerbotAI* botAI) { return new RaidBlackTempleStrategy(botAI); }
     static Strategy* wotlk_os(PlayerbotAI* botAI) { return new RaidOsStrategy(botAI); }
     static Strategy* wotlk_eoe(PlayerbotAI* botAI) { return new RaidEoEStrategy(botAI); }
