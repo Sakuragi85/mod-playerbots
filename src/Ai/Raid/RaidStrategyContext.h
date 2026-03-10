@@ -10,6 +10,7 @@
 #include "RaidMagtheridonStrategy.h"
 #include "RaidSSCStrategy.h"
 #include "RaidTempestKeepStrategy.h"
+#include "RaidZulAmanStrategy.h"
 #include "RaidBlackTempleStrategy.h"
 #include "RaidHyjalSummitStrategy.h"
 #include "RaidOsStrategy.h"
@@ -32,6 +33,7 @@ public:
         creators["magtheridon"] = &RaidStrategyContext::magtheridon;
         creators["ssc"] = &RaidStrategyContext::ssc;
         creators["tempestkeep"] = &RaidStrategyContext::tempestkeep;
+        creators["zulaman"] = &RaidStrategyContext::zulaman;
         creators["blacktemple"] = &RaidStrategyContext::blacktemple;
         creators["hyjal"] = &RaidStrategyContext::hyjal;
         creators["wotlk-os"] = &RaidStrategyContext::wotlk_os;
@@ -51,6 +53,7 @@ private:
     static Strategy* magtheridon(PlayerbotAI* botAI) { return new RaidMagtheridonStrategy(botAI); }
     static Strategy* ssc(PlayerbotAI* botAI) { return new RaidSSCStrategy(botAI); }
     static Strategy* tempestkeep(PlayerbotAI* botAI) { return new RaidTempestKeepStrategy(botAI); }
+    static Strategy* zulaman(PlayerbotAI* botAI) { return new RaidZulAmanStrategy(botAI); }
     static Strategy* blacktemple(PlayerbotAI* botAI) { return new RaidBlackTempleStrategy(botAI); }
     static Strategy* hyjal(PlayerbotAI* botAI) { return new RaidHyjalSummitStrategy(botAI); }
     static Strategy* wotlk_os(PlayerbotAI* botAI) { return new RaidOsStrategy(botAI); }
