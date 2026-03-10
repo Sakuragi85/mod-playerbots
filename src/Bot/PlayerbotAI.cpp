@@ -1552,6 +1552,8 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             break;
         case 533:
             strategyName = "naxx";  // Naxxramas
+        case 534:
+            strategyName = "hyjal";  // Hyjal Summit (Battle for Mount Hyjal)
             break;
         case 544:
             strategyName = "magtheridon";  // Magtheridon's Lair
@@ -1560,10 +1562,16 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             strategyName = "ssc";  // Serpentshrine Cavern
             break;
         case 550:
-            strategyName = "tempestkeep";  // Tempest Keep
+            strategyName = "tempestkeep";  // Tempest Keep: The Eye
+            break;
+        case 564:
+            strategyName = "blacktemple";  // Black Temple
             break;
         case 565:
             strategyName = "gruulslair";  // Gruul's Lair
+            break;
+        case 568:
+            strategyName = "zulaman";  // Zul'Aman
             break;
         case 574:
             strategyName = "wotlk-uk";  // Utgarde Keep
