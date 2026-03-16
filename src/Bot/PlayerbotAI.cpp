@@ -1538,7 +1538,7 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         "moltencore", "naxx", "onyxia", "ssc", "tempestkeep", "hyjal", "ulduar", "voa",
         "wotlk-an", "wotlk-cos", "wotlk-dtk", "wotlk-eoe", "wotlk-fos", "wotlk-gd",
         "wotlk-hol", "wotlk-hor", "wotlk-hos", "wotlk-nex", "wotlk-occ", "wotlk-ok", 
-        "wotlk-os", "wotlk-pos", "wotlk-toc", "wotlk-uk", "wotlk-up", "wotlk-vh"
+        "wotlk-os", "wotlk-pos", "wotlk-toc", "wotlk-uk", "wotlk-up", "wotlk-vh", "zulaman"
     };
 
     for (const std::string& strat : allInstanceStrategies)
@@ -1585,6 +1585,9 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             break;
         case 565:
             strategyName = "gruulslair";  // Gruul's Lair
+            break;
+        case 568:
+            strategyName = "zulaman";  // Zul'Aman
             break;
         case 574:
             strategyName = "wotlk-uk";  // Utgarde Keep
