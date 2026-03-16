@@ -11,6 +11,7 @@
 #include "Ai/Raid/Naxxramas/RaidNaxxTriggerContext.h"
 #include "Ai/Raid/SerpentshrineCavern/RaidSSCTriggerContext.h"
 #include "Ai/Raid/TempestKeep/RaidTempestKeepTriggerContext.h"
+#include "Ai/Raid/BlackTemple/RaidBlackTempleTriggerContext.h"
 #include "Ai/Raid/HyjalSummit/RaidHyjalSummitTriggerContext.h"
 #include "Ai/Raid/ObsidianSanctum/RaidOsTriggerContext.h"
 #include "Ai/Raid/EyeOfEternity/RaidEoETriggerContext.h"
@@ -34,6 +35,7 @@ void AiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Tr
     triggerContexts.Add(new RaidNaxxTriggerContext());
     triggerContexts.Add(new RaidSSCTriggerContext());
     triggerContexts.Add(new RaidTempestKeepTriggerContext());
+    triggerContexts.Add(new RaidBlackTempleTriggerContext());
     triggerContexts.Add(new RaidHyjalSummitTriggerContext());
     triggerContexts.Add(new RaidOsTriggerContext());
     triggerContexts.Add(new RaidEoETriggerContext());
