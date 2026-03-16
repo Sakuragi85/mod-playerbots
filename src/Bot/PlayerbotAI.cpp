@@ -1535,9 +1535,9 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
     static const std::vector<std::string> allInstanceStrategies =
     {
         "aq20", "blacktemple", "bwl", "karazhan", "gruulslair", "icc", "magtheridon",
-        "moltencore", "naxx", "onyxia", "ssc", "tempestkeep", "ulduar", "voa",
+        "moltencore", "naxx", "onyxia", "ssc", "tempestkeep", "hyjal", "ulduar", "voa",
         "wotlk-an", "wotlk-cos", "wotlk-dtk", "wotlk-eoe", "wotlk-fos", "wotlk-gd",
-        "wotlk-hol", "wotlk-hor", "wotlk-hos", "wotlk-nex", "wotlk-occ", "wotlk-ok",
+        "wotlk-hol", "wotlk-hor", "wotlk-hos", "wotlk-nex", "wotlk-occ", "wotlk-ok", 
         "wotlk-os", "wotlk-pos", "wotlk-toc", "wotlk-uk", "wotlk-up", "wotlk-vh"
     };
 
@@ -1568,6 +1568,9 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         case 533:
             strategyName = "naxx";  // Naxxramas
             break;
+        case 534:
+            strategyName = "hyjal";  // Hyjal Summit (Battle for Mount Hyjal)
+            break;
         case 544:
             strategyName = "magtheridon";  // Magtheridon's Lair
             break;
@@ -1575,7 +1578,7 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             strategyName = "ssc";  // Serpentshrine Cavern
             break;
         case 550:
-            strategyName = "tempestkeep";  // Tempest Keep
+            strategyName = "tempestkeep";  // Tempest Keep: The Eye
             break;
         case 564:
             strategyName = "blacktemple";  // Black Temple
