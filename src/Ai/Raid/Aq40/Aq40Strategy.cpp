@@ -35,7 +35,7 @@ void RaidAq40Strategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 
 void RaidAq40Strategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type)
 {
-    if (type != TargetValueExclusionType::Dps)
+    if (type != TargetValueExclusionType::DpsTarget)
         return;
     Aq40ControlAction* control = Aq40ControlAction::Get(botAI);
     uint32 const now = GameTime::GetGameTimeMS().count();
